@@ -1,11 +1,11 @@
-
+import Voronoi from './components/Voronoi'
 import './App.css'
 
 function App() {
 
   return (
     <>
-      <div>Example</div>
+      <Voronoi width={700} height={500}></Voronoi>
     </>
   )
 }
