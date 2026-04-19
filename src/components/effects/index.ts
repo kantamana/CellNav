@@ -1,0 +1,1 @@
+export { jiggleEffect } from "./jiggleEffect";

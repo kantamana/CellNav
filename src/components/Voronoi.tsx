@@ -98,19 +98,106 @@ const Voronoi: React.FC<VoronoiProps> = ({
       ? ""
       : `M${poly.map(({ x, y }) => `${x},${y}`).join("L")}Z`;
 
+
+      interface Point {
+        x: number;
+        y: number;
+      }
+      
+      function distance(a: Point, b: Point): number {
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+      
+      function midPoint(a: Point, b: Point): Point {
+        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      }
+      
+      function longestMidpointLine(polygon: Point[]): [Point, Point] {
+        let maxDist = -Infinity;
+        let result: [Point, Point] = [polygon[0], polygon[0]];
+      
+        const n = polygon.length;
+        for (let i = 0; i < n; i++) {
+          const a1 = polygon[i];
+          const a2 = polygon[(i + 1) % n];
+          const midA = midPoint(a1, a2);
+      
+          for (let j = i + 1; j < n; j++) {
+            const b1 = polygon[j];
+            const b2 = polygon[(j + 1) % n];
+            const midB = midPoint(b1, b2);
+      
+            const d = distance(midA, midB);
+            if (d > maxDist) {
+              maxDist = d;
+              result = [midA, midB];
+            }
+          }
+        }
+      
+        return result;
+      }
+
   return (
+ 
+    
     <svg width={width} height={height} style={{ display: "block" }}>
+    {polygons.map((poly, i) => (
+      <path
+        key={i}
+        d={polygonToPath(poly)}
+        fill={points[i].color}
+        stroke="#000"
+        strokeWidth={1}
+      />
+    ))}
+
       {polygons.map((poly, i) => (
         <path
           key={i}
-          d={polygonToPath(poly)}
+          d={polygonToPath(longestMidpointLine(poly))}
           fill={points[i].color}
           stroke="#000"
           strokeWidth={1}
         />
       ))}
+
+  {/* Longest lines between midpoints */}
+  {polygons.map((poly, i) => {
+      const [p1, p2] = longestMidpointLine(poly);
+      return (
+        <line
+          key={`line-${i}`}
+          x1={p1.x}
+          y1={p1.y}
+          x2={p2.x}
+          y2={p2.y}
+          stroke="red"
+          strokeWidth={2}
+        />
+      );
+    })}
+      
+
+      {/* Draw first corner */}
+      {polygons.map((poly, i) => (
+        <circle
+          key={i}
+          cx={poly[0].x}
+          cy={poly[0].y}
+          r={5}
+          fill={points[i].color}
+          stroke="#fff"
+          strokeWidth={1}
+        />
+      ))}
+
+
+
       {/* Draw points */}
-      {/* {points.map(({ x, y }, i) => (
+      {points.map(({ x, y }, i) => (
         <circle
           key={i}
           cx={x}
@@ -120,7 +207,7 @@ const Voronoi: React.FC<VoronoiProps> = ({
           stroke="#fff"
           strokeWidth={1}
         />
-      ))} */}
+      ))}
     </svg>
   );
 };
