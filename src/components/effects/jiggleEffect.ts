@@ -1,7 +1,9 @@
-export const jiggleEffect = (p, pt, t) => {
+import type { P5CanvasInstance } from "@p5-wrapper/react";
+import type { Point } from "../polygon";
 
-      const noiseY = p.noise(pt.x * 0.1, t) * 3
-      const noiseX = p.noise(pt.y * 0.1, t) * 3
+export const jiggleEffect = (p: P5CanvasInstance, pt: Point, t: number) => {
+  const noiseY = p.noise(pt.x * 0.1, t) * 3;
+  const noiseX = p.noise(pt.y * 0.1, t) * 3;
 
   return {
     x: pt.x + noiseX,

@@ -5,7 +5,7 @@
 // import type { Point } from "./components/mvc";
 // import  PolygonText  from "p5";
 // import P5Sketch from './components/P5Sketch';
-import TextPath from "./components/TextPath";
+// import TextPath from "./components/TextPath";
 import TextContours from "./components/TextContours";
 import Voronoi from "./components/Voronoi";
 
