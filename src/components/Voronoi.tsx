@@ -1,6 +1,9 @@
-import React, { useMemo } from "react";
+import { P5Canvas } from "@p5-wrapper/react";
+import type { P5CanvasInstance } from "@p5-wrapper/react";
+import fontUrl from "../assets/fonts/Courier New Bold.ttf?url";
+import { warpEffect } from "./effects";
 
-type Point = { x: number; y: number };
+type Point = { x: number; y: number; color?: string };
 type Polygon = Point[];
 
 interface VoronoiProps {
@@ -12,7 +15,6 @@ interface VoronoiProps {
 const randomColor = () =>
   `hsl(${Math.floor(Math.random() * 360)}, 70%, 70%)`;
 
-// Helper to clip polygon by half-plane
 function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon {
   const inside = (p: Point) => a * p.x + b * p.y + c >= 0;
   const newPoly: Polygon = [];
@@ -24,7 +26,6 @@ function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon
 
     if (currInside) newPoly.push(curr);
     if (currInside !== nextInside) {
-      // Line segment intersects half-plane boundary
       const t =
         (-(a * curr.x + b * curr.y + c)) /
         (a * (next.x - curr.x) + b * (next.y - curr.y));
@@ -37,179 +38,151 @@ function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon
   return newPoly;
 }
 
-// Compute Voronoi cell polygon for point `p` given others and bounding box
-function computeVoronoiCell(
-  p: Point,
-  others: Point[],
-  bbox: Polygon
-): Polygon {
+function computeVoronoiCell(p: Point, others: Point[], bbox: Polygon): Polygon {
   let poly = bbox;
-
   for (const o of others) {
     if (o === p) continue;
-    // perpendicular bisector line ax + by + c = 0
     let a = 2 * (p.x - o.x);
     let b = 2 * (p.y - o.y);
-    let c = o.x**2 + o.y**2 - p.x**2 - p.y**2;
-    
-    // Flip if p lies on the "wrong" side
+    let c = o.x ** 2 + o.y ** 2 - p.x ** 2 - p.y ** 2;
     if (a * p.x + b * p.y + c < 0) {
       a = -a;
       b = -b;
       c = -c;
     }
-    // Clip polygon by half-plane ax + by + c >= 0 (the side closer to p)
     poly = clipPolygon(poly, a, b, c);
   }
   return poly;
 }
 
-const Voronoi: React.FC<VoronoiProps> = ({
-  width,
-  height,
-  pointsCount = 10,
-}) => {
-  // Generate random points
-  const points = useMemo(() => {
-    return Array.from({ length: pointsCount }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      color: randomColor(),
-    }));
-  }, [pointsCount, width, height]);
+function textBounds(contours: any[]) {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
 
-  // Bounding box polygon (rectangle)
-  const bbox: Polygon = [
-    { x: 0, y: 0 },
-    { x: width, y: 0 },
-    { x: width, y: height },
-    { x: 0, y: height },
-  ];
+  for (const contour of contours) {
+    for (const pt of contour) {
+      minX = Math.min(minX, pt.x);
+      maxX = Math.max(maxX, pt.x);
+      minY = Math.min(minY, pt.y);
+      maxY = Math.max(maxY, pt.y);
+    }
+  }
 
-  // Compute polygons for each cell
-  const polygons = points.map(({ x, y }) =>
-    computeVoronoiCell({ x, y }, points.map(({ x, y }) => ({ x, y })), bbox)
-  );
+  return { minX, maxX, minY, maxY };
+}
 
+const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
+  const sketch = (p: P5CanvasInstance) => {
+    let font: any;
+    let cellData: {
+      poly: Polygon;
+      contours: any[];
+      minX: number;
+      maxX: number;
+      minY: number;
+      maxY: number;
+      label: string;
+      color: string;
+    }[] = [];
 
-  // Convert polygon points to SVG path string
-  const polygonToPath = (poly: Polygon) =>
-    poly.length === 0
-      ? ""
-      : `M${poly.map(({ x, y }) => `${x},${y}`).join("L")}Z`;
+    p.setup = async () => {
+      p.createCanvas(width, height);
+      font = await p.loadFont(fontUrl);
 
+      const points: Point[] = Array.from({ length: pointsCount }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        color: randomColor(),
+      }));
 
-      interface Point {
-        x: number;
-        y: number;
-      }
-      
-      function distance(a: Point, b: Point): number {
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        return Math.sqrt(dx * dx + dy * dy);
-      }
-      
-      function midPoint(a: Point, b: Point): Point {
-        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-      }
-      
-      function longestMidpointLine(polygon: Point[]): [Point, Point] {
-        let maxDist = -Infinity;
-        let result: [Point, Point] = [polygon[0], polygon[0]];
-      
-        const n = polygon.length;
-        for (let i = 0; i < n; i++) {
-          const a1 = polygon[i];
-          const a2 = polygon[(i + 1) % n];
-          const midA = midPoint(a1, a2);
-      
-          for (let j = i + 1; j < n; j++) {
-            const b1 = polygon[j];
-            const b2 = polygon[(j + 1) % n];
-            const midB = midPoint(b1, b2);
-      
-            const d = distance(midA, midB);
-            if (d > maxDist) {
-              maxDist = d;
-              result = [midA, midB];
-            }
-          }
+      const bbox: Polygon = [
+        { x: 0, y: 0 },
+        { x: width, y: 0 },
+        { x: width, y: height },
+        { x: 0, y: height },
+      ];
+
+      const polygons = points.map((pt) => computeVoronoiCell(pt, points, bbox));
+
+      const smallWords = [
+        "sun",
+        "sky",
+        "sea",
+        "wave",
+        "leaf",
+        "code",
+        "node",
+        "grid",
+        "art",
+        "pulse",
+        "flow",
+        "cell",
+        "water",
+        "fire",
+        "dirt",
+        "foam",
+        "air",
+        "grass",
+        "view",
+      ];
+
+      cellData = polygons.map((poly, index) => {
+        const label = smallWords[index % smallWords.length].toUpperCase();
+        const contours = font.textToContours(label, 0, 0, 140, {
+          sampleFactor: 2,
+        });
+        const { minX, maxX, minY, maxY } = textBounds(contours);
+        return {
+          poly,
+          contours,
+          minX,
+          maxX,
+          minY,
+          maxY,
+          label,
+          color: points[index].color ?? "#ffffff",
+        };
+      });
+
+      p.noLoop();
+    };
+
+    p.draw = () => {
+      p.background(20);
+      if (!cellData.length) return;
+
+      for (const cell of cellData) {
+        const { poly, contours, minX, maxX, minY, maxY, color } = cell;
+        const effect = warpEffect(poly, minX, maxX, minY, maxY);
+
+        p.fill(color);
+        p.stroke(0);
+        p.strokeWeight(1);
+        p.beginShape();
+        for (const vertex of poly) {
+          p.vertex(vertex.x, vertex.y);
         }
-      
-        return result;
+        p.endShape(p.CLOSE);
+
+        p.fill(255);
+        p.noStroke();
+        p.beginShape();
+        for (const contour of contours) {
+          p.beginContour();
+          for (const point of contour) {
+            const v = effect(p, point, 0);
+            p.vertex(v.x, v.y);
+          }
+          p.endContour();
+        }
+        p.endShape(p.CLOSE);
       }
+    };
+  };
 
-  return (
- 
-    
-    <svg width={width} height={height} style={{ display: "block" }}>
-    {polygons.map((poly, i) => (
-      <path
-        key={i}
-        d={polygonToPath(poly)}
-        fill={points[i].color}
-        stroke="#000"
-        strokeWidth={1}
-      />
-    ))}
-
-      {polygons.map((poly, i) => (
-        <path
-          key={i}
-          d={polygonToPath(longestMidpointLine(poly))}
-          fill={points[i].color}
-          stroke="#000"
-          strokeWidth={1}
-        />
-      ))}
-
-  {/* Longest lines between midpoints */}
-  {polygons.map((poly, i) => {
-      const [p1, p2] = longestMidpointLine(poly);
-      return (
-        <line
-          key={`line-${i}`}
-          x1={p1.x}
-          y1={p1.y}
-          x2={p2.x}
-          y2={p2.y}
-          stroke="red"
-          strokeWidth={2}
-        />
-      );
-    })}
-      
-
-      {/* Draw first corner */}
-      {polygons.map((poly, i) => (
-        <circle
-          key={i}
-          cx={poly[0].x}
-          cy={poly[0].y}
-          r={5}
-          fill={points[i].color}
-          stroke="#fff"
-          strokeWidth={1}
-        />
-      ))}
-
-
-
-      {/* Draw points */}
-      {points.map(({ x, y }, i) => (
-        <circle
-          key={i}
-          cx={x}
-          cy={y}
-          r={5}
-          fill="#000"
-          stroke="#fff"
-          strokeWidth={1}
-        />
-      ))}
-    </svg>
-  );
+  return <P5Canvas sketch={sketch} />;
 };
 
 export default Voronoi;
