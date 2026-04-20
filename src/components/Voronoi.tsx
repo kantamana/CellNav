@@ -1,7 +1,7 @@
 import { P5Canvas } from "@p5-wrapper/react";
 import type { P5CanvasInstance } from "@p5-wrapper/react";
 import fontUrl from "../assets/fonts/Impact.ttf?url";
-import { warpEffect } from "./effects";
+import { warpEffect, jiggleEffect } from "./effects";
 
 type Point = { x: number; y: number; color?: string };
 type Polygon = Point[];
@@ -73,9 +73,38 @@ function textBounds(contours: any[]) {
   return { minX, maxX, minY, maxY };
 }
 
+function insetPolygon(polygon: Polygon, margin: number): Polygon {
+  if (polygon.length === 0) return polygon;
+
+  // Calculate centroid
+  let cx = 0,
+    cy = 0;
+  for (const pt of polygon) {
+    cx += pt.x;
+    cy += pt.y;
+  }
+  cx /= polygon.length;
+  cy /= polygon.length;
+
+  // Move each vertex towards centroid by margin
+  return polygon.map((pt) => {
+    const dx = cx - pt.x;
+    const dy = cy - pt.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) return pt;
+    const scale = Math.max(0, (dist - margin) / dist);
+    return {
+      x: cx - dx * scale,
+      y: cy - dy * scale,
+    };
+  });
+}
+
 const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
   const sketch = (p: P5CanvasInstance) => {
     let font: any;
+    let points: (Point & { vx: number; vy: number })[] = [];
+    let time = 0;
     let cellData: {
       poly: Polygon;
       contours: any[];
@@ -87,16 +116,48 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
       color: string;
     }[] = [];
 
+    const smallWords = [
+      "sun",
+      "sky",
+      "sea",
+      "wave",
+      "leaf",
+      "code",
+      "sand",
+      "earth",
+      "art",
+      "pulse",
+      "flow",
+      "cell",
+      "water",
+      "fire",
+      "dirt",
+      "foam",
+      "air",
+      "grass",
+      "wind",
+    ];
+
     p.setup = async () => {
       p.createCanvas(width, height);
       font = await p.loadFont(fontUrl);
 
-      const points: Point[] = Array.from({ length: pointsCount }, () => ({
+      points = Array.from({ length: pointsCount }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,
         color: randomColor(),
+        vx: (Math.random() - 0.5) ,
+        vy: (Math.random() - 0.5) ,
       }));
+    };
 
+    p.draw = () => {
+      p.background(255);
+      if (!font) return;
+
+      time += 0.1;
+
+      // Update points
       const bbox: Polygon = [
         { x: 0, y: 0 },
         { x: width, y: 0 },
@@ -104,29 +165,20 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
         { x: 0, y: height },
       ];
 
-      const polygons = points.map((pt) => computeVoronoiCell(pt, points, bbox));
+      for (const pt of points) {
+        pt.x += pt.vx;
+        pt.y += pt.vy;
 
-      const smallWords = [
-        "sun",
-        "sky",
-        "sea",
-        "wave",
-        "leaf",
-        "code",
-        "node",
-        "grid",
-        "art",
-        "pulse",
-        "flow",
-        "cell",
-        "water",
-        "fire",
-        "dirt",
-        "foam",
-        "air",
-        "grass",
-        "view",
-      ];
+        // Bounce off edges
+        if (pt.x < 0 || pt.x > width) pt.vx *= -1;
+        if (pt.y < 0 || pt.y > height) pt.vy *= -1;
+
+        pt.x = Math.max(0, Math.min(width, pt.x));
+        pt.y = Math.max(0, Math.min(height, pt.y));
+      }
+
+      // Recalculate Voronoi cells
+      const polygons = points.map((pt) => computeVoronoiCell(pt, points, bbox));
 
       cellData = polygons.map((poly, index) => {
         const label = smallWords[index % smallWords.length].toUpperCase();
@@ -146,16 +198,11 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
         };
       });
 
-      p.noLoop();
-    };
-
-    p.draw = () => {
-      p.background(255);
-      if (!cellData.length) return;
-
+      // Draw cells
       for (const cell of cellData) {
         const { contours, minX, maxX, minY, maxY, color } = cell;
-        const effect = warpEffect(cell.poly, minX, maxX, minY, maxY);
+        const insetPoly = insetPolygon(cell.poly, 3);
+        const effect = warpEffect(insetPoly, minX, maxX, minY, maxY);
 
         p.fill(color);
         p.noStroke();
@@ -164,7 +211,8 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
           p.beginContour();
           for (const point of contour) {
             const v = effect(p, point, 0);
-            p.vertex(v.x, v.y);
+            const jiggled = jiggleEffect(p, v, time);
+            p.vertex(v.x + (jiggled.x - v.x), v.y + (jiggled.y - v.y));
           }
           p.endContour();
         }

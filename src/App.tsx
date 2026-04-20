@@ -24,7 +24,7 @@ function App() {
       {/* <PolygonText text="HELLO" polygon={polygon} width={400} height={400} />; */}
       {/* <Demo></Demo> */}
       <TextContours />
-      <Voronoi width={800} height={400} />
+      <Voronoi width={400} height={700} />
     </>
   );
 }
