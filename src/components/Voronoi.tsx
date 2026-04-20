@@ -165,6 +165,27 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
         { x: 0, y: height },
       ];
 
+      // Calculate repulsion forces
+      const minDist = 80;
+      const repelStrength = 0.5;
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          const dx = points[j].x - points[i].x;
+          const dy = points[j].y - points[i].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < minDist && dist > 0) {
+            const force = repelStrength * (minDist - dist) / minDist;
+            const angle = Math.atan2(dy, dx);
+
+            points[i].vx -= Math.cos(angle) * force;
+            points[i].vy -= Math.sin(angle) * force;
+            points[j].vx += Math.cos(angle) * force;
+            points[j].vy += Math.sin(angle) * force;
+          }
+        }
+      }
+
       for (const pt of points) {
         pt.x += pt.vx;
         pt.y += pt.vy;
