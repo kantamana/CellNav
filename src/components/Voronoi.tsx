@@ -1,6 +1,6 @@
 import { P5Canvas } from "@p5-wrapper/react";
 import type { P5CanvasInstance } from "@p5-wrapper/react";
-import fontUrl from "../assets/fonts/Courier New Bold.ttf?url";
+import fontUrl from "../assets/fonts/Impact.ttf?url";
 import { warpEffect } from "./effects";
 
 type Point = { x: number; y: number; color?: string };
@@ -13,7 +13,7 @@ interface VoronoiProps {
 }
 
 const randomColor = () =>
-  `hsl(${Math.floor(Math.random() * 360)}, 70%, 70%)`;
+  `hsl(${Math.floor(Math.random() * 360)}, 50%, 60%)`;
 
 function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon {
   const inside = (p: Point) => a * p.x + b * p.y + c >= 0;
@@ -150,23 +150,14 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
     };
 
     p.draw = () => {
-      p.background(20);
+      p.background(255);
       if (!cellData.length) return;
 
       for (const cell of cellData) {
-        const { poly, contours, minX, maxX, minY, maxY, color } = cell;
-        const effect = warpEffect(poly, minX, maxX, minY, maxY);
+        const { contours, minX, maxX, minY, maxY, color } = cell;
+        const effect = warpEffect(cell.poly, minX, maxX, minY, maxY);
 
         p.fill(color);
-        p.stroke(0);
-        p.strokeWeight(1);
-        p.beginShape();
-        for (const vertex of poly) {
-          p.vertex(vertex.x, vertex.y);
-        }
-        p.endShape(p.CLOSE);
-
-        p.fill(255);
         p.noStroke();
         p.beginShape();
         for (const contour of contours) {
