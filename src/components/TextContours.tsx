@@ -5,7 +5,6 @@ import fontUrl from "../assets/fonts/Courier New Bold.ttf?url";
 import { warpEffect } from "./effects";
 import { polygon } from "./polygon";
 
-
 type ContourPoint = { x: number; y: number };
 
 const TEXT = "HELLO";
@@ -13,7 +12,10 @@ const TEXT = "HELLO";
 const sketch = (p: P5CanvasInstance) => {
   let font: any; // p5.Font type depends on typings setup
   let contours: any[] = [];
-  let minX = 0, maxX = 0, minY = 0, maxY = 0;
+  let minX = 0,
+    maxX = 0,
+    minY = 0,
+    maxY = 0;
 
   const squareBoundaryCage = (n: number): ContourPoint[] => {
     if (n <= 4) {
@@ -23,7 +25,7 @@ const sketch = (p: P5CanvasInstance) => {
         { x: 1, y: 1 },
         { x: 0, y: 1 },
       ];
-      return corners.slice(0, n);
+      return corners;
     }
 
     const extra = n - 4;
@@ -74,15 +76,15 @@ const sketch = (p: P5CanvasInstance) => {
     for (const contour of contours) {
       allPoints.push(...contour);
     }
-    minX = Math.min(...allPoints.map(pt => pt.x));
-    maxX = Math.max(...allPoints.map(pt => pt.x));
-    minY = Math.min(...allPoints.map(pt => pt.y));
-    maxY = Math.max(...allPoints.map(pt => pt.y));
+    minX = Math.min(...allPoints.map((pt) => pt.x));
+    maxX = Math.max(...allPoints.map((pt) => pt.x));
+    minY = Math.min(...allPoints.map((pt) => pt.y));
+    maxY = Math.max(...allPoints.map((pt) => pt.y));
   };
 
   p.draw = () => {
     p.background(20);
-    p.fill("#ffbe0b")
+    p.fill("#ffbe0b");
     p.stroke(255);
 
     const t = p.millis() * 0.002;

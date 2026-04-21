@@ -60,7 +60,7 @@ function squareBoundaryCage(n: number): Point[] {
       { x: 1, y: 1 },
       { x: 0, y: 1 },
     ];
-    return corners.slice(0, n);
+    return corners;
   }
 
   const extra = n - 4;
@@ -102,25 +102,32 @@ export const warpEffect = (
   minX: number,
   maxX: number,
   minY: number,
-  maxY: number
+  maxY: number,
 ) => {
   const n = polygon.length;
+
+  let target = polygon;
+  let sourceN = n;
+  if (n < 4) {
+    target = [...polygon, polygon[0]]; // duplicate first point to make 4
+    sourceN = 4;
+  }
 
   return (_p: P5CanvasInstance, pt: Point, _t: number) => {
     const u = (pt.x - minX) / (maxX - minX || 1);
     const v = (pt.y - minY) / (maxY - minY || 1);
     const p = { x: u, y: v };
 
-    // Build a true source cage on the unit square boundary with exactly n vertices.
-    const sourcePolygon = squareBoundaryCage(n);
+    // Build a true source cage on the unit square boundary with exactly sourceN vertices.
+    const sourcePolygon = squareBoundaryCage(sourceN);
     const lambdas = getMeanValueCoords(p, sourcePolygon);
 
     let x = 0;
     let y = 0;
 
-    for (let i = 0; i < n; i++) {
-      x += lambdas[i] * polygon[i].x;
-      y += lambdas[i] * polygon[i].y;
+    for (let i = 0; i < sourceN; i++) {
+      x += lambdas[i] * target[i].x;
+      y += lambdas[i] * target[i].y;
     }
 
     return { x, y };

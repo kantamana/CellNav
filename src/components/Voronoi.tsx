@@ -12,10 +12,14 @@ interface VoronoiProps {
   pointsCount?: number;
 }
 
-const randomColor = () =>
-  `hsl(${Math.floor(Math.random() * 360)}, 50%, 60%)`;
+const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 50%, 60%)`;
 
-function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon {
+function clipPolygon(
+  polygon: Polygon,
+  a: number,
+  b: number,
+  c: number,
+): Polygon {
   const inside = (p: Point) => a * p.x + b * p.y + c >= 0;
   const newPoly: Polygon = [];
   for (let i = 0; i < polygon.length; i++) {
@@ -27,7 +31,7 @@ function clipPolygon(polygon: Polygon, a: number, b: number, c: number): Polygon
     if (currInside) newPoly.push(curr);
     if (currInside !== nextInside) {
       const t =
-        (-(a * curr.x + b * curr.y + c)) /
+        -(a * curr.x + b * curr.y + c) /
         (a * (next.x - curr.x) + b * (next.y - curr.y));
       newPoly.push({
         x: curr.x + t * (next.x - curr.x),
@@ -146,8 +150,8 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
         x: Math.random() * width,
         y: Math.random() * height,
         color: randomColor(),
-        vx: (Math.random() - 0.5) ,
-        vy: (Math.random() - 0.5) ,
+        vx: Math.random() - 0.5,
+        vy: Math.random() - 0.5,
       }));
     };
 
@@ -175,7 +179,7 @@ const Voronoi = ({ width, height, pointsCount = 19 }: VoronoiProps) => {
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < minDist && dist > 0) {
-            const force = repelStrength * (minDist - dist) / minDist;
+            const force = (repelStrength * (minDist - dist)) / minDist;
             const angle = Math.atan2(dy, dx);
 
             points[i].vx -= Math.cos(angle) * force;
