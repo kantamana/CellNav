@@ -1,0 +1,3 @@
+# Effects are described as data and implemented by functions registered by name
+
+An effect (noise wobble, and later others) could be passed around as a function, but a function can't be written in an HTML attribute or saved as JSON, which would break the rule that the Spec is the source of truth (ADR 0001). So a Spec holds only `{ type: "noise", on: "hover", ... }`, and a registry maps each `type` to the code that implements it. Adding an effect means registering one function; the builder, the `effects` attribute and the `<cell-nav>` tag then all accept it with no other change. The cost is a name lookup, and an unknown `type` is an error reported to the page rather than a silent no-op.

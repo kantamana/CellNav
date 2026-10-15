@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Using the CellNav plugin</title>
+    <!-- A plain HTML page: no framework, no build step. -->
+    <style>
+      body { margin: 0; background: #fbfaf7; color: #222; font-family: system-ui, sans-serif; line-height: 1.55; }
+      main { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+      h1 { margin: 0 0 4px; }
+      h2 { margin: 40px 0 6px; font-size: 1.1rem; }
+      p { margin: 0 0 12px; max-width: 70ch; }
+      textarea.code { display: block; box-sizing: border-box; width: 100%; margin: 0 0 8px; padding: 12px; background: #1b1b1b; color: #e9e6dd; border: 2px solid transparent; border-radius: 8px; font: 13px/1.4 ui-monospace, Menlo, monospace; resize: vertical; white-space: pre; overflow-x: auto; }
+      textarea.code:focus { outline: none; border-color: #5bc0be; }
+      .shuffle { margin: 0 8px 8px 0; padding: 4px 10px; font: 13px system-ui, sans-serif; border: 1px solid #c9c2b0; border-radius: 6px; background: #fff; cursor: pointer; }
+      .shuffle:hover { background: #f1eee4; }
+      .err { margin: 0 0 8px; min-height: 1.2em; color: #b3261e; font-size: 13px; }
+      pre { margin: 0 0 12px; padding: 12px; background: #1b1b1b; color: #e9e6dd; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+      code { background: #eee; padding: 1px 4px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Using the CellNav plugin</h1>
+      <p>Every navbar on this page is shown under the exact HTML that makes it. <b>Edit any code block</b> and the navbar updates as you type.</p>
+
+      <h2>Step 1 · Add the script, once per page</h2>
+      <p>This is the only thing added to the site. The default font is inside the file.</p>
+      <pre id="script-code"></pre>
+
+      <h2>Step 2 · Use the tag with ordinary links inside</h2>
+      <p>
+        If the script is missing or fails, these stay on the page as a normal list of
+        links. <code>stretch</code> makes the cells wider and <code>seed</code> picks a layout.
+        With no <code>warp</code> given, every word is bent to fill its whole cell.
+      </p>
+      <cell-nav stretch="2.8" seed="7" height="300">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact">Contact</a>
+      </cell-nav>
+
+      <h2>Step 3 · Or give the items and the look as attributes</h2>
+      <p>
+        <code>items</code> is a comma-separated list, <code>margin</code> is the gap between
+        cells, <code>padding</code> keeps the text off the cell walls (both in pixels), and
+        <code>palette</code> is the cell colors in order.
+      </p>
+      <cell-nav
+        items="Sun,Sea,Sky,Sand,Wind"
+        stretch="3"
+        seed="11"
+        margin="8"
+        padding="16"
+        height="260"
+        palette="#0b132b,#1c2541,#3a506b,#5bc0be,#6fffe9"
+      ></cell-nav>
+
+      <h2>Step 4 · Same tag, items with real URLs</h2>
+      <p><code>items</code> also takes JSON when each item needs its own link.</p>
+      <cell-nav
+        stretch="2.5"
+        seed="4"
+        height="240"
+        items='[{"label":"Docs","href":"/docs"},{"label":"Pricing","href":"/pricing"},{"label":"Login","href":"/login"},{"label":"Help","href":"/help"}]'
+      ></cell-nav>
+
+      <h2>Step 5 · Loosen it for a homemade look</h2>
+      <p>
+        The same navbar as step 2 with <code>warp</code> lowered. At <code>warp="1"</code> (the
+        default) text is bent to fill the cell; at <code>0</code> it sits upright in a plain
+        rectangle. In between, the letters sit a little crooked, which gives it a
+        deliberately rough, hand-made feel. It's opt-in.
+      </p>
+      <cell-nav stretch="2.8" seed="7" height="300" warp="0.4">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#blog">Blog</a>
+        <a href="#contact">Contact</a>
+      </cell-nav>
+
+      <h2>Step 6 · A different layout every time</h2>
+      <p>
+        <code>seed</code> is a number by default, so the same number always gives the same
+        cells. Set <code>seed="random"</code> and each visitor gets a fresh layout on every
+        page load. Use the button to try seeds here: it writes the seed it picked into the
+        code, so you can keep the one you like.
+      </p>
+      <cell-nav items="Sun,Sea,Sky,Sand,Wind" stretch="2.8" seed="random" height="280"></cell-nav>
+
+      <h2>Step 7 · Even or organic cells</h2>
+      <p>
+        By default the seeds are evened out (25 rounds of relaxation), so the cells come out
+        similar in size and the pattern looks tidy and symmetrical. Add <code>organic</code>
+        and the seeds are scattered at random with only a minimum gap between them: cells
+        vary in size and shape, like your original prototype. Both blocks below use the same
+        items and seed. <code>relaxation="3"</code> sets the amount of evening-out directly
+        (0 = none).
+      </p>
+      <cell-nav items="Sun,Sea,Sky,Sand,Wind,Dew,Fog" stretch="2.8" seed="5" height="300"></cell-nav>
+      <cell-nav items="Sun,Sea,Sky,Sand,Wind,Dew,Fog" stretch="2.8" seed="5" height="300" organic></cell-nav>
+
+      <h2>Step 8 · Set the boundary</h2>
+      <p>
+        By default the cells fill the whole box. <code>boundary</code> gives them an outer
+        shape instead: a preset name (<code>rounded</code>, <code>ellipse</code>,
+        <code>circle</code>, <code>hexagon</code>, <code>diamond</code>) or an SVG path. The
+        path is stretched to fill the <code>width</code> and <code>height</code> box. The
+        area outside stays empty, so the page behind shows through and clicks there do
+        nothing. <code>boundary-stroke</code> draws the outline.
+      </p>
+      <cell-nav
+        items="Home,About,Work,Blog,Contact,Shop"
+        stretch="2.2"
+        seed="4"
+        height="420"
+        padding="14"
+        boundary="ellipse"
+        boundary-stroke="#1b1b1b"
+      ></cell-nav>
+      <cell-nav
+        items="Sun,Sea,Sky,Sand,Wind"
+        stretch="2.5"
+        seed="9"
+        height="300"
+        boundary="hexagon"
+      ></cell-nav>
+      <p>
+        A path works the same way. This one is a slanted banner, and as with everything
+        else you can edit it live.
+      </p>
+      <cell-nav
+        items="News,Events,Shop,About"
+        stretch="2.8"
+        seed="2"
+        height="260"
+        boundary="M 8 0 L 100 0 L 92 100 L 0 100 Z"
+        boundary-stroke="#8338ec"
+      ></cell-nav>
+
+      <h2>Step 9 · Concave shapes</h2>
+      <p>
+        The boundary can have dents: a star, a heart, an L, an arrow. The cells fill the
+        shape, and a cell that gets bent around a dent keeps its own seed, so it stays one
+        connected piece. In a cell that is only gently dented the word is bent onto the
+        cell's own outline, so its letters follow the curves; in a deeply dented one (the
+        tip of a star, say) the word goes in the cell's biggest convex part instead, because
+        bending a word through such a notch would throw its letters out of the cell. The only
+        rule is that the outline can't cross itself.
+      </p>
+      <cell-nav
+        items="Home,About,Work,Blog,Contact,Shop,Help"
+        stretch="1.6"
+        seed="3"
+        height="520"
+        padding="12"
+        boundary="M50 0 L61 35 L98 35 L68 57 L79 91 L50 70 L21 91 L32 57 L2 35 L39 35 Z"
+        boundary-stroke="#1b1b1b"
+      ></cell-nav>
+      <cell-nav
+        items="Love,Hugs,Home,Calm,Joy,Warm"
+        stretch="1.8"
+        seed="6"
+        height="440"
+        margin="5"
+        boundary="M50 30 C50 0 0 0 0 35 C0 65 50 85 50 100 C50 85 100 65 100 35 C100 0 50 0 50 30 Z"
+      ></cell-nav>
+      <cell-nav
+        items="Next,Skip,Back,Stop,Play"
+        stretch="2"
+        seed="8"
+        height="300"
+        boundary="M0 30 L60 30 L60 0 L100 50 L60 100 L60 70 L0 70 Z"
+        boundary-stroke="#d62828"
+      ></cell-nav>
+
+      <h2>Step 10 · Behavior: hover, current page, keyboard and events</h2>
+      <p>
+        Every cell is a real link. Hover or tab to one and it lightens and gets an outline;
+        <b>Tab</b> moves between cells and <b>Enter</b> follows the link. The current item
+        is outlined and marked <code>aria-current="page"</code>. Set it with
+        <code>active="projects"</code> (an item id), or with <code>active="auto"</code> to
+        follow the address: in this first one, click a cell and the page address changes,
+        and the outline follows.
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="280"
+        warp="0.6"
+        active="auto"
+      ></cell-nav>
+
+      <p>
+        A click sends a <code>cellnav-navigate</code> event (with the item's id, label and
+        href) before the browser follows the link. Call <code>preventDefault()</code> to
+        handle routing yourself, as a single-page app would. The handler below is the real
+        code running on this page: it stops the jump and moves the outline itself, on the
+        nav marked <code>data-router</code>. Whatever you click is logged underneath.
+      </p>
+      <pre id="router-code"></pre>
+      <cell-nav
+        data-router
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="12"
+        height="280"
+        warp="0.6"
+        active="home"
+      ></cell-nav>
+      <pre id="event-log">events appear here when you click a cell above</pre>
+
+      <p>
+        Theming uses CSS custom properties on the tag, so a site can match its own style:
+        <code>--cellnav-ink</code> (outline colour), <code>--cellnav-ring-width</code> and
+        <code>--cellnav-hover-brightness</code>.
+      </p>
+      <cell-nav
+        style="--cellnav-ink: #d62828; --cellnav-ring-width: 7; --cellnav-hover-brightness: 1.35"
+        items="Red,Ring,Bright"
+        stretch="2.4"
+        seed="3"
+        height="240"
+        active="ring"
+      ></cell-nav>
+
+      <h2>Step 11 · Pictures instead of text</h2>
+      <p>
+        Put a picture in each link and set <code>fill="image"</code>. Each picture is scaled
+        to cover its cell and clipped to the cell's shape. The label appears on hover or
+        focus (and always on touch screens, which can't hover). A picture's proportions
+        come from its <code>width</code> and <code>height</code> attributes; if those are
+        missing, as on the last picture below, it is measured once it loads.
+      </p>
+      <p>
+        The cells can lean towards their pictures' proportions: wide pictures get wider
+        cells and tall ones get taller cells. <code>aspect-blend</code> sets how far, from
+        0 (every cell keeps the layout's shape) to 1 (as close to the picture as the layout
+        allows). It is the same six pictures and the same seed each time, at 0, the default
+        0.5, and 1:
+      </p>
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="440"
+        aspect-blend="0"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        <a href="#leaf"><img src="img/leaf.svg" alt="Leaf" width="600" height="800" /></a>
+        <a href="#dunes"><img src="img/dunes.svg" alt="Dunes" /></a>
+      </cell-nav>
+
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="440"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        <a href="#leaf"><img src="img/leaf.svg" alt="Leaf" width="600" height="800" /></a>
+        <a href="#dunes"><img src="img/dunes.svg" alt="Dunes" /></a>
+      </cell-nav>
+
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="440"
+        aspect-blend="1"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        <a href="#leaf"><img src="img/leaf.svg" alt="Leaf" width="600" height="800" /></a>
+        <a href="#dunes"><img src="img/dunes.svg" alt="Dunes" /></a>
+      </cell-nav>
+
+      <p>
+        Matching a picture's proportions isn't enough on its own: a picture is a rectangle,
+        so a wedge-shaped cell with the right proportions still hides most of it.
+        <code>shape-fit</code> (0 to 1, default 1) also pushes each cell towards a
+        rectangle, so more of its picture shows. The one above is the default; this is the
+        same navbar with it switched off, so you can compare. Cells are straight-edged
+        shapes, so this steers them rather than making them exact rectangles.
+      </p>
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="440"
+        aspect-blend="1"
+        shape-fit="0"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        <a href="#leaf"><img src="img/leaf.svg" alt="Leaf" width="600" height="800" /></a>
+        <a href="#dunes"><img src="img/dunes.svg" alt="Dunes" /></a>
+      </cell-nav>
+
+      <p>
+        <code>labels="always"</code> keeps the labels visible, and
+        <code>labels="none"</code> hides them (each cell still has its label for screen
+        readers). A boundary works with pictures too.
+      </p>
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="440"
+        labels="always"
+        boundary="ellipse"
+        aspect-blend="0.7"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        <a href="#leaf"><img src="img/leaf.svg" alt="Leaf" width="600" height="800" /></a>
+        <a href="#dunes"><img src="img/dunes.svg" alt="Dunes" /></a>
+      </cell-nav>
+
+      <h2>Step 12 · Perlin-noise effects</h2>
+      <p>
+        An <b>effect</b> distorts the letters, the cell outlines, or both. Add
+        <code>noise</code> to switch the noise effect on. It is frozen by default: a rough,
+        hand-drawn look. <code>noise-speed</code> above 0 makes it move.
+        <code>noise-amount</code> is how far points move (px), <code>noise-scale</code> the
+        size of the wobbles (px). Turn the amount up and the letters get harder to read, and
+        a larger scale smooths the wobble out. Two presets give a starting look:
+        <code>noise="jitter"</code> (small and quick, like the original prototype) and
+        <code>noise="wobble"</code> (slow and large).
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+      ></cell-nav>
+
+      <p>
+        Always moving, with the <code>jitter</code> preset. It respects "reduce motion" in
+        the visitor's system settings (it freezes), pauses while off-screen, and stops when
+        removed from the page.
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="11"
+        height="260"
+        noise="jitter"
+      ></cell-nav>
+
+      <h3>Three kinds of jitter</h3>
+      <p>
+        <code>noise-mode</code> picks how points move. By default each point gets its own
+        noise. <code>shear</code> moves x by the noise of <b>y</b> and y by the noise of
+        <b>x</b>, with the same noise for both, as the prototype did: a shape only slides
+        sideways, so strokes keep their thickness. <code>swell</code> is the opposite: x
+        moves by the noise of x and y by the noise of y, so strokes pinch and bulge. Same
+        settings, same seed, in that order (default, shear, swell):
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+        noise-mode="shear"
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+        noise-mode="swell"
+      ></cell-nav>
+
+      <h3>Bigger without spikier</h3>
+      <p>
+        Turning <code>noise-amount</code> up on its own squeezes the same wiggle into the
+        same width, so it gets steeper and spikier. <code>noise-size</code> zooms the whole
+        wobble instead: the moves and the width of the waves grow together, so it is the
+        same wobble, only bigger (<code>noise-size="2"</code> is exactly the default wobble
+        seen from twice as close). The first navbar is the default, the second is size 2.5,
+        and the third raises <code>noise-amount</code> by the same 2.5 for comparison:
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+        noise-amount="3"
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+        noise-amount="3"
+        noise-size="2.5"
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        noise
+        noise-amount="7.5"
+      ></cell-nav>
+
+      <h3>Which cells it applies to</h3>
+      <p>
+        <code>noise-on</code> picks the cells: <code>all</code> (the default),
+        <code>hover</code> (the cell under the pointer, or with keyboard focus),
+        <code>active</code> (the current item), or item ids, in a list if you like. A cell
+        fades the effect in and out over <code>noise-ease</code> milliseconds (200 by
+        default), and nothing runs at all until a cell is hovered. Hover each of these:
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="3"
+        height="260"
+        noise="wobble"
+        noise-on="hover"
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="5"
+        height="260"
+        noise="jitter"
+        noise-on="about,blog"
+      ></cell-nav>
+
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="9"
+        height="260"
+        noise="jitter"
+        noise-on="hover,active"
+        active="projects"
+      ></cell-nav>
+
+      <h3>Letters, outlines, or both</h3>
+      <p>
+        <code>noise-target</code> is <code>text</code> (the default), <code>cells</code> (the
+        outlines, including a picture's clip and the hover outline) or <code>both</code>.
+        Noise depends only on position, so neighbouring cells never pull apart.
+      </p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="4"
+        height="260"
+        noise="wobble"
+        noise-target="cells"
+      ></cell-nav>
+
+      <cell-nav
+        fill="image"
+        stretch="2.5"
+        seed="5"
+        height="360"
+        noise="wobble"
+        noise-target="both"
+        noise-on="hover"
+      >
+        <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+        <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+        <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+        <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+      </cell-nav>
+
+      <h3>Several effects, and your own</h3>
+      <p>
+        The <code>effects</code> attribute takes a JSON list, so effects stack, and it
+        accepts any effect type, including ones you register in code. Here is a whole new
+        effect, <code>shake</code>, registered with one function (this is the real code
+        running on this page), and then used from HTML by name:
+      </p>
+      <pre id="effect-code"></pre>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="2"
+        height="260"
+        effects='[{"type":"shake","on":"hover"}]'
+      ></cell-nav>
+
+      <p>Two effects stacked: slow outlines all the time, and a quick jitter on hover.</p>
+      <cell-nav
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="6"
+        height="260"
+        effects='[{"type":"noise","preset":"wobble","target":"cells"},{"type":"noise","preset":"jitter","on":"hover"}]'
+      ></cell-nav>
+
+      <p>
+        In code, the same thing reads
+        <code>cellNav(items).effect(noise({ preset: "wobble", on: "hover" }))</code>, and an
+        unknown effect name is reported as an error instead of being ignored.
+      </p>
+
+      <h2>Step 13 · No cell backgrounds</h2>
+      <p>
+        <code>background="none"</code> draws no cell at all and puts the cell's colour on the
+        text instead. The cells are still there: they take clicks, tint faintly on hover and
+        focus, and show the outline for the current page (set <code>--cellnav-ink</code> to
+        a light colour on a dark page, as here). The colours come from the palette, so on a
+        light page pale ones like the default yellow will be hard to read. A dark page suits
+        them. This only applies to text cells: a picture cell's picture is its fill.
+      </p>
+      <cell-nav
+        style="background: #14110f; padding: 12px; border-radius: 8px; --cellnav-ink: #fff"
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="7"
+        height="260"
+        background="none"
+      ></cell-nav>
+
+      <p>With a palette of your own, and the effects work as usual:</p>
+      <cell-nav
+        style="background: #14110f; padding: 12px; border-radius: 8px; --cellnav-ink: #fff"
+        items="Home,About,Projects,Blog,Contact"
+        stretch="2.8"
+        seed="11"
+        height="260"
+        background="none"
+        palette="#ff9ecd,#9ef0ff,#c8ff9e,#ffe29e,#d2b5ff"
+        noise="jitter"
+        noise-mode="shear"
+      ></cell-nav>
+
+      <h2>Step 14 · One word in one shape</h2>
+      <p>
+        A navbar with a single item and a <code>boundary</code> is one cell that fills the
+        whole shape, so a word bent to fit a shape needs no new machinery. Use
+        <code>margin="0"</code> so there is no gap at the edge. The shapes to choose from are
+        <code>rectangle</code>, <code>rounded</code>, <code>ellipse</code>, <code>circle</code>,
+        <code>hexagon</code>, <code>diamond</code>, <code>triangle</code>, <code>pentagon</code>,
+        <code>star</code>, <code>heart</code>, <code>cross</code>, <code>arrow</code> and
+        <code>drop</code>, or any SVG path. In the builder, the same thing is one call:
+        <code>textInShape("LOVE", "heart", { color: "#ff006e" })</code>.
+      </p>
+      <p>
+        A shape that is about as wide as it is tall has no longest direction, so its word
+        reads horizontally. The word is stretched to fill the shape, so a short word works
+        best. Letter outlines get as many points as the size needs, so curves stay smooth
+        however big the word is bent; <code>text-detail</code> sets the longest stretch of
+        outline in pixels (2.5 by default), if you want it finer or lighter.
+      </p>
+      <cell-nav
+        style="max-width: 380px"
+        items="SUN"
+        boundary="circle"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        palette="#ffbe0b"
+      ></cell-nav>
+      <cell-nav
+        style="max-width: 380px"
+        items="HOME"
+        boundary="pentagon"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        palette="#3a86ff"
+      ></cell-nav>
+
+      <p>
+        A shape with a gentle dent, like the heart, is fine: the word is bent onto the heart's
+        own outline, so its letters follow the curves. A deeply dented shape (a plus sign, an
+        arrow, a star) puts the word in its biggest convex part instead, because bending a
+        word through those notches would throw its letters out of the shape.
+      </p>
+      <cell-nav
+        style="max-width: 380px"
+        items="LOVE"
+        boundary="heart"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        palette="#ff006e"
+      ></cell-nav>
+      <cell-nav
+        style="max-width: 380px"
+        items="PLUS"
+        boundary="cross"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        palette="#06d6a0"
+      ></cell-nav>
+      <cell-nav
+        style="max-width: 380px"
+        items="NEXT"
+        boundary="arrow"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        palette="#8338ec"
+      ></cell-nav>
+
+      <p>
+        To fill a deeply dented shape part by part, add <code>text-flow="spread"</code>. The
+        shape is cut into convex pieces and the word is broken across them like line breaks,
+        so the plus sign below is filled arm by arm instead of only along one bar. Where a
+        phrase has spaces, the breaks prefer them: "I LOVE YOU" breaks between its words
+        rather than inside one, whenever a space is close to where a break would fall. A
+        shape without dents is unaffected, and a star's arms are too thin to hold letters
+        well, so it gains little.
+      </p>
+      <cell-nav
+        style="max-width: 380px"
+        items="PLUS"
+        boundary="cross"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        text-flow="spread"
+        palette="#06d6a0"
+      ></cell-nav>
+      <cell-nav
+        style="max-width: 380px"
+        items="I LOVE YOU"
+        boundary="heart"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        text-flow="spread"
+        palette="#ff006e"
+      ></cell-nav>
+
+      <p>
+        With <code>background="none"</code> the shape is empty and the word takes the colour,
+        and <code>boundary-stroke</code> draws the outline:
+      </p>
+      <cell-nav
+        style="max-width: 380px; background: #14110f; padding: 12px; border-radius: 8px"
+        items="STAR"
+        boundary="star"
+        width="600"
+        height="600"
+        margin="0"
+        padding="6"
+        background="none"
+        boundary-stroke="#ffbe0b"
+        palette="#ffbe0b"
+      ></cell-nav>
+    </main>
+
+    <script src="/dist/cellnav.iife.js"></script>
+
+    <!-- Demo-page only, not part of the plugin. -->
+    <script>
+      // A custom effect: one function. It is shown in step 12 exactly as it runs here.
+      function shake(spec) {
+        return {
+          text: true, // moves the letters
+          cells: false, // leaves the outlines alone
+          on: [].concat(spec.on ?? "hover"),
+          ease: 120,
+          detail: 8,
+          animated: true, // keeps drawing frames while it is on
+          // `p` is a point, `seconds` the effect's clock; return where the point goes
+          displace: (p, seconds) => ({ x: Math.sin(seconds * 50 + p.y * 0.2) * (spec.amount ?? 3), y: 0 }),
+        };
+      }
+      CellNav.registerEffect("shake", shake);
+
+      document.getElementById("effect-code").textContent =
+        'CellNav.registerEffect("shake", ' + shake.toString() + ");";
+    </script>
+    <script>
+      // The handler printed in step 10 is this very function.
+      function route(e) {
+        if (!e.target.hasAttribute("data-router")) return;
+        e.preventDefault(); // no page jump: we "route" ourselves
+        e.target.setAttribute("active", e.detail.id);
+      }
+      document.addEventListener("cellnav-navigate", route);
+
+      const log = document.getElementById("event-log");
+      document.addEventListener("cellnav-navigate", (e) => {
+        log.textContent =
+          `cellnav-navigate  id="${e.detail.id}"  href="${e.detail.href}"  ` +
+          `default prevented: ${e.defaultPrevented}`;
+      });
+      document.getElementById("router-code").textContent =
+        'document.addEventListener("cellnav-navigate", ' + route.toString() + ");";
+    </script>
+    <script>
+      // Prints a tag the way a person would write it: one attribute per line
+      // once there are several, and plain quotes (outerHTML would print &quot;).
+      const markup = (el) => {
+        const attrs = [...el.attributes].map((a) =>
+          a.value === ""
+            ? a.name // a bare attribute such as `organic`
+            : a.value.includes('"') ? `${a.name}='${a.value}'` : `${a.name}="${a.value}"`,
+        );
+        const tag = el.localName;
+        const open = attrs.length > 3
+          ? `<${tag}\n${attrs.map((a) => "  " + a).join("\n")}\n>`
+          : `<${tag}${attrs.map((a) => " " + a).join("")}>`;
+        const lines = el.innerHTML.split("\n").filter((l) => l.trim());
+        const pad = Math.min(...lines.map((l) => l.match(/^ */)[0].length));
+        const inner = lines.map((l) => "  " + l.slice(pad)).join("\n");
+        return inner ? `${open}\n${inner}\n</${tag}>` : `${open}</${tag}>`;
+      };
+      document.getElementById("script-code").textContent =
+        '<script src="cellnav.iife.js"><\/script>';
+      // Each tag gets an editable copy of its own markup. Edits are applied to a
+      // hidden new tag first; the old one is swapped out only if that renders.
+      document.querySelectorAll("cell-nav").forEach((first) => {
+        const host = document.createElement("div");
+        first.replaceWith(host);
+        host.append(first);
+
+        const code = document.createElement("textarea");
+        code.className = "code";
+        code.spellcheck = false;
+        code.setAttribute("aria-label", "Editable <cell-nav> markup");
+        code.value = markup(first);
+        const fit = () => {
+          code.style.height = "auto";
+          code.style.height = code.scrollHeight + 4 + "px";
+        };
+        const msg = document.createElement("p");
+        msg.className = "err";
+        msg.setAttribute("role", "status");
+        const shuffle = document.createElement("button");
+        shuffle.type = "button";
+        shuffle.textContent = "New random layout";
+        shuffle.className = "shuffle";
+        // Writes a concrete seed into the code, so what you see stays reproducible.
+        shuffle.addEventListener("click", () => {
+          const seed = Math.floor(Math.random() * 1000);
+          code.value = /\bseed=("[^"]*"|'[^']*')/.test(code.value)
+            ? code.value.replace(/\bseed=("[^"]*"|'[^']*')/, `seed="${seed}"`)
+            : code.value.replace("<cell-nav", `<cell-nav seed="${seed}"`);
+          fit();
+          apply();
+        });
+        host.before(code, shuffle, msg);
+        fit();
+
+        let timer;
+        const apply = () => {
+          const tpl = document.createElement("template");
+          tpl.innerHTML = code.value;
+          const next = tpl.content.querySelector("cell-nav");
+          if (!next) {
+            msg.textContent = "Needs a <cell-nav> tag.";
+            return;
+          }
+          next.hidden = true;
+          next.addEventListener("cellnav-render", () => {
+            msg.textContent = "";
+            host.querySelectorAll("cell-nav").forEach((n) => n !== next && n.remove());
+            next.hidden = false;
+          });
+          next.addEventListener("cellnav-error", (e) => {
+            msg.textContent = e.detail;
+            next.remove();
+          });
+          host.append(next);
+        };
+        code.addEventListener("input", () => {
+          fit();
+          clearTimeout(timer);
+          timer = setTimeout(apply, 250);
+        });
+      });
+    </script>
+  </body>
+</html>

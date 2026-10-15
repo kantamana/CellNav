@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Studio Fable</title>
+    <style>
+      :root { --ink: #1b1b1b; --paper: #fbfaf7; }
+      body { margin: 0; background: var(--paper); color: var(--ink); font: 18px/1.6 Georgia, serif; }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+      header { padding: 16px 0 8px; }
+      /* the nav fills its container; just size the container */
+      cell-nav { --cellnav-ink: var(--ink); }
+      main section { padding: 32px 0; }
+      h1, h2 { font-family: system-ui, sans-serif; letter-spacing: .02em; }
+      .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+      .hero cell-nav { max-width: 420px; justify-self: center; width: 100%; }
+      @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+      footer { padding: 24px 0 48px; font: 14px system-ui, sans-serif; color: #666; }
+      footer a { color: inherit; margin-right: 16px; }
+    </style>
+  </head>
+  <body>
+    <header class="wrap">
+      <!-- The nav. Links inside the tag are the items, and stay a plain list of links if the script fails.
+           active="auto" outlines the item whose link matches the page address. -->
+      <cell-nav stretch="2.8" seed="7" height="260" margin="6" padding="14" active="auto"
+        palette="#ffbe0b,#fb5607,#ff006e,#8338ec,#3a86ff">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#contact">Contact</a>
+      </cell-nav>
+    </header>
+
+    <main class="wrap">
+      <section id="home" class="hero">
+        <div>
+          <h1>Studio Fable</h1>
+          <p>
+            We make posters, type and small web things. The navigation above is one script and one tag:
+            every cell is a real link, and the words are bent to fit.
+          </p>
+        </div>
+        <!-- One word in one shape: a single item and a boundary. -->
+        <cell-nav items="HELLO" boundary="heart" width="600" height="600" margin="0" padding="6"
+          palette="#ff006e" noise noise-mode="shear" noise-amount="3" noise-speed="0.6"></cell-nav>
+      </section>
+
+      <section id="about">
+        <h2>About</h2>
+        <p>
+          Three people and one dog, working from a room with a very large window. We like things that
+          look made by hand but work like proper software.
+        </p>
+      </section>
+
+      <section id="gallery">
+        <h2>Gallery</h2>
+        <!-- Pictures instead of text: each picture is clipped to its cell, and the cells lean towards
+             the pictures' proportions. Hover or focus a cell to see its label. -->
+        <cell-nav fill="image" seed="5" height="440" aspect-blend="0.6">
+          <a href="#sea"><img src="img/sea.svg" alt="Sea" width="900" height="600" /></a>
+          <a href="#tower"><img src="img/tower.svg" alt="Tower" width="500" height="900" /></a>
+          <a href="#sun"><img src="img/sun.svg" alt="Sun" width="700" height="700" /></a>
+          <a href="#hills"><img src="img/hills.svg" alt="Hills" width="1200" height="500" /></a>
+        </cell-nav>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <p>hello@studiofable.example</p>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <a href="#home">Home</a><a href="#about">About</a><a href="#gallery">Gallery</a><a href="#contact">Contact</a>
+    </footer>
+
+    <script src="cellnav.iife.js"></script>
+    <script>
+      // While building: surface anything the tag could not draw.
+      document.addEventListener("cellnav-error", (e) => console.warn("cell-nav:", e.detail));
+    </script>
+  </body>
+</html>

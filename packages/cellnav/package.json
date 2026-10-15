@@ -1,0 +1,39 @@
+{
+  "name": "cellnav",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "clipper-lib": "^6.4.2",
+    "opentype.js": "^1.3.4"
+  },
+  "devDependencies": {
+    "@types/clipper-lib": "^6.4.0",
+    "@types/opentype.js": "^1.3.10",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  },
+  "description": "A navbar of cells: text or pictures bent to fill Voronoi cells and shapes, as a <cell-nav> web component.",
+  "main": "dist/cellnav.iife.js",
+  "module": "dist/cellnav.es.js",
+  "unpkg": "dist/cellnav.iife.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/cellnav.es.js",
+      "default": "./dist/cellnav.iife.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "AGENTS.md"
+  ]
+}

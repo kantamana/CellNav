@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CellNav demo</title>
+    <style>
+      body { margin: 0; background: #f4f1ea; color: #1b1b1b; font-family: system-ui, sans-serif; line-height: 1.5; }
+      main { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+      h1 { margin: 0 0 4px; }
+      h2 { margin: 40px 0 12px; }
+      .lede { max-width: 70ch; margin: 0 0 16px; }
+      .pipeline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0 0; }
+      .pipeline span { background: #fff; border: 1px solid #d8d2c4; border-radius: 6px; padding: 6px 10px; font-size: 14px; }
+      .pipeline b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #7a7466; }
+      .grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+      @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+      pre { margin: 0; padding: 12px; background: #1b1b1b; color: #e9e6dd; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+      pre.code { white-space: pre-wrap; }
+      .out { background: #fff; border-radius: 8px; overflow: hidden; }
+      details { margin-top: 8px; font-size: 14px; }
+      summary { cursor: pointer; color: #5a5446; margin-bottom: 6px; }
+      .todo { margin-top: 48px; padding: 16px; background: #fff; border-radius: 8px; border: 1px dashed #c9c2b0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>CellNav</h1>
+      <p class="lede">
+        A navbar of cells. You describe it by chaining calls; each call returns a new
+        builder, and <code>.spec()</code> gives you the plain data it built. Every
+        example below shows the code that produced it.
+      </p>
+      <div class="pipeline">
+        <span><b>cellNav(items)</b>Items</span>→
+        <span><b>.layout(…)</b>turns Items into Shapes</span>→
+        <span><b>.fill(…)</b>what goes in each Shape</span>→
+        <span><b>.margin / .palette</b>look</span>→
+        <span><b>.mount(el, font)</b>draw as SVG</span>
+      </div>
+      <div id="examples"></div>
+      <div class="todo">
+        <b>Not built yet:</b> hover / active / keyboard behavior (<code>.behave(…)</code>),
+        image fills, aspect pull, single-shape text, nested layouts, and the
+        <code>&lt;cell-nav&gt;</code> tag. Today every cell is a plain link.
+      </div>
+    </main>
+    <script type="module" src="/src/demo.ts"></script>
+  </body>
+</html>

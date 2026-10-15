@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# the built plugin is the thing people download, so it is committed
+!packages/cellnav/dist
