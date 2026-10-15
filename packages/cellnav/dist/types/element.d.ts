@@ -23,6 +23,8 @@ export declare class CellNavElement extends HTMLElement {
     private generation;
     private randomSeed?;
     private motion?;
+    private links;
+    private onParsed;
     connectedCallback(): void;
     disconnectedCallback(): void;
     private onLocation;

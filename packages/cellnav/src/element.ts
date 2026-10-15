@@ -50,13 +50,22 @@ export class CellNavElement extends HTMLElement {
   private randomSeed?: number;
   private motion?: Motion;
 
+  // The tag may be created before the browser has read the links inside it (the
+  // script is in <head>), and links can be added or changed later, so watch them.
+  private links = new MutationObserver(() => this.schedule());
+  private onParsed = () => this.schedule();
+
   connectedCallback() {
+    this.links.observe(this, { childList: true, subtree: true, characterData: true });
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", this.onParsed, { once: true });
     this.schedule();
     // With active="auto", follow the address bar as it changes.
     window.addEventListener("hashchange", this.onLocation);
     window.addEventListener("popstate", this.onLocation);
   }
   disconnectedCallback() {
+    this.links.disconnect();
+    document.removeEventListener("DOMContentLoaded", this.onParsed);
     this.motion?.stop();
     this.motion = undefined;
     window.removeEventListener("hashchange", this.onLocation);
@@ -127,6 +136,9 @@ export class CellNavElement extends HTMLElement {
   private async render() {
     const run = ++this.generation;
     try {
+      // Still reading the page and the items are the tag's links: wait until all of
+      // them have arrived (DOMContentLoaded renders), instead of drawing a part.
+      if (document.readyState === "loading" && !this.hasAttribute("items") && !this.hasAttribute("spec")) return;
       let spec = this.currentSpec();
       if (spec.items.length === 0) {
         throw new Error(
