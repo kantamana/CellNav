@@ -3,6 +3,7 @@ import * as api from "../src";
 import { CELL_NAV_ATTRIBUTES } from "../src/attributes";
 import { BEHAVIOR_CSS } from "../src/render";
 import readme from "../README.md?raw";
+import agents from "../AGENTS.md?raw";
 
 // The README is what another person (or agent) builds a website from, so it must not drift from the code.
 const mentions = (word: string) => readme.includes("`" + word + "`") || readme.includes("`" + word + "=") || readme.includes(word + "=\"");
@@ -47,5 +48,11 @@ describe("the README matches the code", () => {
 
   it("every effect option it shows for the custom effect is what the runtime reads", () => {
     for (const key of ["text", "cells", "on", "ease", "detail", "animated", "displace"]) expect(readme).toContain(key);
+  });
+
+  it("never tells anyone to lower warp (the owner dislikes the look)", () => {
+    expect(readme).not.toMatch(/Use [^.\n]*warp="0\.\d/);
+    expect(agents).toContain("Never set `warp` below 1");
+    expect(agents).toContain('corner-fill-at="prevent-glitch"');
   });
 });

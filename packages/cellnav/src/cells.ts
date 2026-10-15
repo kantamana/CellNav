@@ -19,6 +19,8 @@ export interface Item {
   aspect?: number;
 }
 
+export type CornerFillAt = "all" | "smooth" | "prevent-glitch";
+
 export interface Spec {
   items: Item[];
   width: number;
@@ -61,9 +63,12 @@ export interface Spec {
      * Text fill only. Where `cornerFill` applies. "all" (default): at every
      * corner of every letter. "smooth": only where the cell's matching corner is
      * practically a straight line (a gentle curve, such as an ellipse's or a
-     * heart's lobe), not at a real corner.
+     * heart's lobe), not at a real corner. "prevent-glitch": only at the outer
+     * corners of the first and last letters, the ones that meet the cell's
+     * corners, which is where a round letter leaves a gap that reads as a
+     * dent in the cell's corner.
      */
-    cornerFillAt?: "all" | "smooth";
+    cornerFillAt?: CornerFillAt;
     /**
      * Text fill only. "cell" (default) draws each cell as a coloured shape with
      * plain text on it. "none" draws no cell at all and colours the text with
@@ -162,12 +167,17 @@ function fitText(
   textShape: Polygon,
   strength: number,
   segmentPx?: number,
-  corner?: { amount: number; smoothOnly: boolean; window: number },
+  corner?: { amount: number; at: CornerFillAt; window: number },
 ): Point[][] {
   const frame = frameOf(textShape);
   const { source, target } = orientedCage(textShape, frame);
   const bend = cageWarp(source, target);
-  const cornerGate = corner?.smoothOnly ? straightCornerGate(cageCornerTurns({ source, target }, corner.window)) : undefined;
+  const cornerGate =
+    corner?.at === "smooth"
+      ? straightCornerGate(cageCornerTurns({ source, target }, corner.window))
+      : corner?.at === "prevent-glitch"
+        ? wordEndsGate
+        : undefined;
   // `warp` eases the bend towards an upright rectangle in the shape. A dented
   // outline has no such rectangle, so there the letters always follow the outline.
   const dented = !isConvexPolygon(textShape, CONVEX_ENOUGH);
@@ -225,6 +235,9 @@ function straightCornerGate(turns: number[]) {
     (1 - x) * (1 - y) * gates[0]! + x * (1 - y) * gates[1]! + x * y * gates[2]! + (1 - x) * y * gates[3]!;
 }
 
+/** Corner fill for "prevent-glitch": 1 at the word's left and right ends, 0 everywhere else. */
+const wordEndsGate = (x: number) => (x < 0.01 || x > 0.99 ? 1 : 0);
+
 /** Below this solidity (area over convex hull area) a cell counts as deeply dented. */
 const DENTED = 0.85;
 
@@ -264,7 +277,7 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
   const detail = spec.fill?.detail;
   const corner = {
     amount: spec.fill?.cornerFill ?? 0,
-    smoothOnly: spec.fill?.cornerFillAt === "smooth",
+    at: spec.fill?.cornerFillAt ?? "all",
     // Wide enough to see a corner rounded off by the padding, narrow enough that a gentle curve is not one.
     window: Math.max(6, 1.5 * padding),
   };

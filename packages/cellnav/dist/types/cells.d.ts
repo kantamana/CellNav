@@ -11,6 +11,7 @@ export interface Item {
     /** The picture's width:height. Measured from the image if left out. */
     aspect?: number;
 }
+export type CornerFillAt = "all" | "smooth" | "prevent-glitch";
 export interface Spec {
     items: Item[];
     width: number;
@@ -55,9 +56,12 @@ export interface Spec {
          * Text fill only. Where `cornerFill` applies. "all" (default): at every
          * corner of every letter. "smooth": only where the cell's matching corner is
          * practically a straight line (a gentle curve, such as an ellipse's or a
-         * heart's lobe), not at a real corner.
+         * heart's lobe), not at a real corner. "prevent-glitch": only at the outer
+         * corners of the first and last letters, the ones that meet the cell's
+         * corners, which is where a round letter leaves a gap that reads as a
+         * dent in the cell's corner.
          */
-        cornerFillAt?: "all" | "smooth";
+        cornerFillAt?: CornerFillAt;
         /**
          * Text fill only. "cell" (default) draws each cell as a coloured shape with
          * plain text on it. "none" draws no cell at all and colours the text with

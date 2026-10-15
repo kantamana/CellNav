@@ -60,8 +60,8 @@ export const text = (
     detail?: number;
     /** 0 to 1 (default 0, off): push rounded letters (O, C, S) out into their corners. */
     cornerFill?: number;
-    /** Where corner fill applies: "all" (default) or "smooth" (only at cell corners that are practically straight). */
-    cornerFillAt?: "all" | "smooth";
+    /** Where corner fill applies: "all" (default), "smooth" (only at cell corners that are practically straight) or "prevent-glitch" (only the word's outer end corners). */
+    cornerFillAt?: "all" | "smooth" | "prevent-glitch";
     /** "spread": in a cell with dents, break the word across convex pieces like line breaks. */
     flow?: "outline" | "spread";
   } = {},
@@ -174,8 +174,8 @@ export function textInShape(
     detail?: number;
     /** 0 to 1 (default 0, off): push rounded letters (O, C, S) out into their corners. */
     cornerFill?: number;
-    /** Where corner fill applies: "all" (default) or "smooth" (only at cell corners that are practically straight). */
-    cornerFillAt?: "all" | "smooth";
+    /** Where corner fill applies: "all" (default), "smooth" (only at cell corners that are practically straight) or "prevent-glitch" (only the word's outer end corners). */
+    cornerFillAt?: "all" | "smooth" | "prevent-glitch";
     /** "spread": break the word across the shape's convex parts, like line breaks. */
     flow?: "outline" | "spread";
   } = {},

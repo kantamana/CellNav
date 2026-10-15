@@ -25,6 +25,7 @@
       <!-- The nav. Links inside the tag are the items, and stay a plain list of links if the script fails.
            active="auto" outlines the item whose link matches the page address. -->
       <cell-nav stretch="2.8" seed="7" height="260" margin="6" padding="14" active="auto"
+        corner-fill="1" corner-fill-at="prevent-glitch"
         palette="#ffbe0b,#fb5607,#ff006e,#8338ec,#3a86ff">
         <a href="#home">Home</a>
         <a href="#about">About</a>
@@ -44,7 +45,7 @@
         </div>
         <!-- One word in one shape: a single item and a boundary. -->
         <cell-nav items="HELLO" boundary="heart" width="600" height="600" margin="0" padding="6"
-          palette="#ff006e" noise noise-mode="shear" noise-amount="3" noise-speed="0.6"></cell-nav>
+          corner-fill="1" corner-fill-at="prevent-glitch" palette="#ff006e" noise noise-mode="shear" noise-amount="3" noise-speed="0.6"></cell-nav>
       </section>
 
       <section id="about">

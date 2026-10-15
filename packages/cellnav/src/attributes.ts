@@ -171,7 +171,7 @@ export function specFromAttributes(attrs: Attrs, childItems: Item[]): Spec {
     ...(background === "none" || background === "cell" ? { background } : {}),
     ...(detail !== undefined && detail > 0 && { detail }),
     ...(cornerFill !== undefined && { cornerFill }),
-    ...(cornerFillAt === "all" || cornerFillAt === "smooth" ? { cornerFillAt } : {}),
+    ...(cornerFillAt === "all" || cornerFillAt === "smooth" || cornerFillAt === "prevent-glitch" ? { cornerFillAt } : {}),
     ...(flow === "spread" || flow === "outline" ? { flow } : {}),
     ...(warp !== undefined && { warp }),
     ...(padding !== undefined && { padding }),

@@ -16,7 +16,7 @@ Everything is plain SVG. The layout is **static and reproducible**: the same att
 3. Put the tag where the nav goes. **Links inside the tag are the items** and stay on the page as a plain list of links if the script fails to load:
 
 ```html
-<cell-nav stretch="2.8" seed="7" height="300" active="auto">
+<cell-nav stretch="2.8" seed="7" height="300" active="auto" corner-fill="1" corner-fill-at="prevent-glitch">
   <a href="/">Home</a>
   <a href="/about">About</a>
   <a href="/work">Work</a>
@@ -42,8 +42,9 @@ Items can also come from an attribute: `items="Home,About,Work"` (links become `
 | Cells that lean towards their pictures' proportions | `aspect-blend="0.5"` (0 = ignore pictures, 1 = full) |
 | The whole nav in a shape (heart, ellipse, ...) | `boundary="heart"` (plus `boundary-stroke="#000"` for an outline) |
 | One word bent to fill one shape | `<cell-nav items="LOVE" boundary="heart" width="600" height="600" margin="0" padding="6">` |
-| Round letters (O, C, S) fill the cell's corners | `corner-fill="1"` |
+| Round letters (O, C, S) fill the cell's corners (recommended: use this on every text nav) | `corner-fill="1" corner-fill-at="prevent-glitch"` |
 | Corner fill only where the cell is smooth, not at real corners | `corner-fill="1" corner-fill-at="smooth"` |
+| Corner fill only at the word's two ends, where it meets the cell corners | `corner-fill="1" corner-fill-at="prevent-glitch"` |
 | Hand-drawn, rough letters | `noise` (frozen), or `noise="jitter"` (moving) |
 | Only the hovered cell wobbles | `noise="wobble" noise-on="hover"` |
 | Letters keep their thickness while wobbling | `noise-mode="shear"` (the opposite, strokes pinch and bulge: `swell`) |
@@ -74,7 +75,7 @@ All optional except the items. Numbers that are not valid are ignored (never an 
 - `background`: `cell` (default) or `none` (no fill, the cell's color goes on the text).
 - `text-detail` (default 2.5): longest stretch of letter outline in px. Lower is smoother, higher is lighter.
 - `corner-fill` (0 to 1, default 0 = off; also written `cornerFill`, which HTML lowercases to `cornerfill`): pushes rounded letters (O, C, S, the bowl of a D) out into the corners of their box so they fill a straight-cornered cell instead of leaving a gap. Straight letters (H, E, A, V) do not change. Also `cornerFill` in `CellNav.text({...})` and `textInShape`.
-- `corner-fill-at` (`all` default, or `smooth`): with `smooth`, corner fill only happens where the cell's matching corner is practically a straight line (a gentle curve such as an ellipse's edge or a heart's lobe), not at a real corner. Also `cornerFillAt` in `CellNav.text({...})` and `textInShape`.
+- `corner-fill-at` (`all` default, `smooth`, or `prevent-glitch`): `all` fills every letter corner; `smooth` only where the cell's matching corner is practically a straight line (a gentle curve such as an ellipse's edge or a heart's lobe), not at a real corner; `prevent-glitch` only the outer corners of the first and last letters of the word (or of each piece with `text-flow="spread"`), the ones that meet the cell's corners, where a round letter leaves a gap that looks like a dent. Also `cornerFillAt` in `CellNav.text({...})` and `textInShape`.
 - `text-flow`: `outline` (default) bends the word onto a dented cell's outline, or into its biggest convex part if deeply dented; `spread` cuts a dented cell into convex pieces and breaks the word across them like line breaks, preferring spaces.
 
 **Pictures** (`fill="image"`)
@@ -141,7 +142,7 @@ A navbar is described by one plain-data object (`{items, width, height, layout, 
 ## Things that commonly go wrong
 
 - **Nothing shows:** open the console; a `cellnav-error` message says why (unknown shape name, `items` JSON broken, no items, crossing path, unknown effect).
-- **Unreadable letters:** thin or skewed cells squash words. Use `warp="0.5"`, fewer items, a lower `stretch`, or `organic` off. Long labels need big cells; a short word fits best.
+- **Unreadable letters:** thin or skewed cells squash words. Use fewer items, shorter labels, a lower `stretch`, or `organic` off. Do not lower `warp` to fix this: it makes the letters look loose and homemade, which is only wanted as a deliberate style. Long labels need big cells; a short word fits best.
 - **Colors:** with `background="none"` the palette colors are the text colors, so pale ones vanish on a light page.
 - **Pictures:** use a real URL; SVG and raster both work. Give `<img>` `width`/`height` to avoid a wait for measuring. Pictures cover their cell, so edges are cropped.
 - **Touch screens** cannot hover, so picture labels are shown always there.

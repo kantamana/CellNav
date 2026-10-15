@@ -78,7 +78,7 @@ function xi(e, A) {
     ...I === "none" || I === "cell" ? { background: I } : {},
     ...F !== void 0 && F > 0 && { detail: F },
     ...M !== void 0 && { cornerFill: M },
-    ...d === "all" || d === "smooth" ? { cornerFillAt: d } : {},
+    ...d === "all" || d === "smooth" || d === "prevent-glitch" ? { cornerFillAt: d } : {},
     ...y === "spread" || y === "outline" ? { flow: y } : {},
     ...Q !== void 0 && { warp: Q },
     ...h !== void 0 && { padding: h }
@@ -3060,7 +3060,7 @@ function tr(e, A) {
   if (c && I && C.length > 1 && Math.hypot(c.x - I.x, c.y - I.y) < 1e-9 && C.pop(), C.length < 3) throw new Error("Boundary path needs at least 3 points.");
   return C;
 }
-const MQ = pe, Se = (e, A, r) => (A.x - e.x) * (r.y - e.y) - (A.y - e.y) * (r.x - e.x);
+const dQ = pe, Se = (e, A, r) => (A.x - e.x) * (r.y - e.y) - (A.y - e.y) * (r.x - e.x);
 function Xi(e) {
   const A = e.length;
   for (let r = 0; r < A; r++) {
@@ -12371,7 +12371,7 @@ function Je(e, A) {
   return e;
 }
 function zr(e, A, r, n, i, s) {
-  const a = It(r), { source: g, target: Q } = As(r, a), h = jg(g, Q), w = s != null && s.smoothOnly ? _g(ts({ source: g, target: Q }, s.window)) : void 0, C = !pe(r, BB), c = C ? void 0 : es(r, a), I = (M) => {
+  const a = It(r), { source: g, target: Q } = As(r, a), h = jg(g, Q), w = (s == null ? void 0 : s.at) === "smooth" ? _g(ts({ source: g, target: Q }, s.window)) : (s == null ? void 0 : s.at) === "prevent-glitch" ? $g : void 0, C = !pe(r, BB), c = C ? void 0 : es(r, a), I = (M) => {
     const d = h(M);
     if (C) return Ue(r, d) ? d : Li(r, d);
     if (!c || n >= 1) return d;
@@ -12399,8 +12399,8 @@ function _g(e) {
   });
   return (r, n) => (1 - r) * (1 - n) * A[0] + r * (1 - n) * A[1] + r * n * A[2] + (1 - r) * n * A[3];
 }
-const $g = 0.85, AQ = 0.5;
-function eQ(e) {
+const $g = (e) => e < 0.01 || e > 0.99 ? 1 : 0, AQ = 0.85, eQ = 0.5;
+function tQ(e) {
   var i, s;
   if (((i = e.fill) == null ? void 0 : i.type) !== "image") return [];
   const A = e.fill.aspectBlend ?? 0.5;
@@ -12408,7 +12408,7 @@ function eQ(e) {
   const r = ((s = e.layout) == null ? void 0 : s.stretch) ?? nB, n = Math.min(1, Math.max(0, e.fill.shapeFit ?? 1));
   return [
     e.items.map((a) => se(e, a) ? Ri(r, a.aspect, A) : r),
-    e.items.map((a) => se(e, a) ? AQ * n : 0)
+    e.items.map((a) => se(e, a) ? eQ * n : 0)
   ];
 }
 function iB(e, A) {
@@ -12419,10 +12419,10 @@ function iB(e, A) {
     i,
     e.layout,
     Bn(e.boundary, n, i),
-    ...eQ(e)
+    ...tQ(e)
   ), a = e.palette ?? Xg, g = ((c = e.fill) == null ? void 0 : c.padding) ?? 10, Q = (I = e.fill) == null ? void 0 : I.detail, h = {
     amount: ((F = e.fill) == null ? void 0 : F.cornerFill) ?? 0,
-    smoothOnly: ((M = e.fill) == null ? void 0 : M.cornerFillAt) === "smooth",
+    at: ((M = e.fill) == null ? void 0 : M.cornerFillAt) ?? "all",
     // Wide enough to see a corner rounded off by the padding, narrow enough that a gentle curve is not one.
     window: Math.max(6, 1.5 * g)
   }, w = ((d = e.fill) == null ? void 0 : d.flow) === "spread", C = Math.min(1, Math.max(0, ((y = e.fill) == null ? void 0 : y.warp) ?? 1));
@@ -12439,7 +12439,7 @@ function iB(e, A) {
         (b) => zr(A, b.text, $[b.piece], C, Q, h)
       );
     } else {
-      const T = Hi(R) >= $g ? R : as(R);
+      const T = Hi(R) >= AQ ? R : as(R);
       k = zr(A, P, Je(T, g), C, Q, h);
     }
     return {
@@ -12458,13 +12458,13 @@ function iB(e, A) {
 const sB = /* @__PURE__ */ new WeakMap(), Ke = /* @__PURE__ */ new WeakMap(), GA = "http://www.w3.org/2000/svg", VA = (e) => e.map(
   (A) => "M" + A.map((r) => `${r.x.toFixed(2)},${r.y.toFixed(2)}`).join("L") + "Z"
 ).join("");
-function tQ(e) {
+function rQ(e) {
   const A = /^#([0-9a-f]{6})$/i.exec(e);
   if (!A) return "#111";
   const r = parseInt(A[1], 16);
   return (0.299 * (r >> 16) + 0.587 * (r >> 8 & 255) + 0.114 * (r & 255)) / 255 > 0.5 ? "#111" : "#f7f5ee";
 }
-const rQ = `
+const nQ = `
 .cn-link { cursor: pointer; outline: none; }
 .cn-scrim { fill: #000; opacity: 0; pointer-events: none; transition: opacity .15s; }
 .cn-link:hover .cn-scrim, .cn-link:focus-visible .cn-scrim { opacity: .38; }
@@ -12482,12 +12482,12 @@ const rQ = `
 .cn-link:focus-visible .cn-ring, .cn-link[aria-current] .cn-ring { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .cn-cell, .cn-flat, .cn-ring, .cn-scrim, .cn-label-hover { transition: none; } }
 `;
-let nQ = 0;
-function BQ(e, A, r, n = {}) {
+let BQ = 0;
+function iQ(e, A, r, n = {}) {
   const i = document.createElementNS(GA, "svg");
   i.setAttribute("viewBox", `0 0 ${A} ${r}`), i.setAttribute("role", "navigation"), i.style.width = "100%", i.style.height = "auto", i.style.display = "block";
-  const s = `cn${++nQ}`, a = document.createElementNS(GA, "style");
-  a.textContent = rQ, i.append(a);
+  const s = `cn${++BQ}`, a = document.createElementNS(GA, "style");
+  a.textContent = nQ, i.append(a);
   const g = [];
   if (n.outline) {
     const Q = document.createElementNS(GA, "path");
@@ -12519,12 +12519,12 @@ function BQ(e, A, r, n = {}) {
       F.setAttribute("d", VA(Q.label)), F.setAttribute("fill-rule", "evenodd"), F.setAttribute("pointer-events", "none"), Q.image ? F.setAttribute(
         "class",
         Q.labelMode === "hover" ? "cn-image-label cn-label-hover" : "cn-image-label"
-      ) : F.setAttribute("fill", Q.flat ? Q.color : tQ(Q.color)), w.append(F), I.label = F;
+      ) : F.setAttribute("fill", Q.flat ? Q.color : rQ(Q.color)), w.append(F), I.label = F;
     }
     i.append(w);
   }), sB.set(i, { cells: e, nodes: g }), i;
 }
-function iQ(e, A) {
+function sQ(e, A) {
   var r;
   e.querySelectorAll("a.cn-link").forEach((n) => {
     n.getAttribute("data-id") === A ? n.setAttribute("aria-current", "page") : n.removeAttribute("aria-current");
@@ -12532,13 +12532,13 @@ function iQ(e, A) {
 }
 function oB(e, A, r = {}) {
   const { width: n, height: i, boundary: s, boundaryStroke: a } = e, g = r.pageUrl ?? (typeof location < "u" ? location.href : "");
-  return BQ(iB(e, A), n, i, {
+  return iQ(iB(e, A), n, i, {
     outline: a ? { boundary: Bn(s, n, i), stroke: a } : void 0,
     active: Tt(e.items, e.active, g),
     onNavigate: r.onNavigate
   });
 }
-const sQ = [
+const oQ = [
   [1, 1, 0],
   [-1, 1, 0],
   [1, -1, 0],
@@ -12560,7 +12560,7 @@ function qr(e) {
   }
   for (let Q = 0; Q < 512; Q++) r[Q] = n[Q & 255];
   const i = A() * 256, s = A() * 256, a = A() * 256, g = (Q, h, w, C) => {
-    const c = sQ[Q % 12];
+    const c = oQ[Q % 12];
     return c[0] * h + c[1] * w + c[2] * C;
   };
   return (Q, h, w) => {
@@ -12580,16 +12580,16 @@ function qr(e) {
     );
   };
 }
-const oQ = {
+const aQ = {
   // The prototype's look: small, quick, fine-grained.
   jitter: { amount: 3, scale: 10, speed: 6 },
   // Slow and large.
   wobble: { amount: 6, scale: 60, speed: 0.4 }
-}, aQ = { amount: 4, scale: 12, speed: 0 }, xt = /* @__PURE__ */ new Map();
-function EQ(e, A) {
+}, EQ = { amount: 4, scale: 12, speed: 0 }, xt = /* @__PURE__ */ new Map();
+function gQ(e, A) {
   xt.set(e, A);
 }
-function gQ(e, A) {
+function QQ(e, A) {
   const r = xt.get(e.type);
   if (!r)
     throw new Error(
@@ -12597,15 +12597,15 @@ function gQ(e, A) {
     );
   return r(e, A);
 }
-const QQ = (e) => ({
+const lQ = (e) => ({
   text: e === void 0 || e === "text" || e === "both",
   cells: e === "cells" || e === "both"
-}), lQ = (e) => (Array.isArray(e) ? e : e ? [e] : ["all"]).map((A) => A.trim()).filter(Boolean), he = (e, A) => typeof e == "number" && Number.isFinite(e) ? e : A, uQ = 1.65, we = (e) => Math.max(-1, Math.min(1, e * uQ));
-EQ("noise", (e, { seed: A }) => {
-  const r = e, n = { ...aQ, ...r.preset ? oQ[r.preset] : {} }, i = Math.min(50, Math.max(0.05, he(r.size, 1))), s = Math.max(0, he(r.amount, n.amount)) * i, a = Math.max(1, he(r.scale, n.scale)) * i, g = Math.max(0, he(r.speed, n.speed)), Q = r.seed === "random" ? Math.floor(Math.random() * 2 ** 31) : he(r.seed, A), h = r.mode ?? (r.preserve === "area" ? "shear" : "free"), w = qr(Q), C = qr(Q + 7919);
+}), uQ = (e) => (Array.isArray(e) ? e : e ? [e] : ["all"]).map((A) => A.trim()).filter(Boolean), he = (e, A) => typeof e == "number" && Number.isFinite(e) ? e : A, hQ = 1.65, we = (e) => Math.max(-1, Math.min(1, e * hQ));
+gQ("noise", (e, { seed: A }) => {
+  const r = e, n = { ...EQ, ...r.preset ? aQ[r.preset] : {} }, i = Math.min(50, Math.max(0.05, he(r.size, 1))), s = Math.max(0, he(r.amount, n.amount)) * i, a = Math.max(1, he(r.scale, n.scale)) * i, g = Math.max(0, he(r.speed, n.speed)), Q = r.seed === "random" ? Math.floor(Math.random() * 2 ** 31) : he(r.seed, A), h = r.mode ?? (r.preserve === "area" ? "shear" : "free"), w = qr(Q), C = qr(Q + 7919);
   return {
-    ...QQ(r.target),
-    on: lQ(r.on),
+    ...lQ(r.target),
+    on: uQ(r.on),
     ease: Math.max(0, he(r.ease, 200)),
     detail: Math.max(3, a / 2),
     animated: g > 0,
@@ -12620,14 +12620,14 @@ EQ("noise", (e, { seed: A }) => {
     }
   };
 });
-function hQ(e, A, r, n) {
+function wQ(e, A, r, n) {
   var s;
   const i = (s = r[A]) == null ? void 0 : s.id;
   return e.some(
     (a) => a === "all" ? !0 : a === "hover" ? n.hovered.has(A) : a === "active" ? n.active === A : a === i
   );
 }
-function wQ(e, A, r, n) {
+function cQ(e, A, r, n) {
   if (n <= 0) return A;
   const i = e + (A - e) * (1 - Math.exp(-3 * r / n));
   return Math.abs(A - i) < 1e-3 ? A : i;
@@ -12643,12 +12643,12 @@ function ht(e, A, r = !0) {
   }
   return !r && e.length > 0 && n.push(e[e.length - 1]), n;
 }
-const cQ = 100;
+const fQ = 100;
 function aB(e, A, r) {
   var uA, dA;
   const n = sB.get(e), i = A.effects ?? [];
   if (!n || i.length === 0) return;
-  const s = typeof ((uA = A.layout) == null ? void 0 : uA.rngSeed) == "number" ? A.layout.rngSeed : 1, a = i.map((O) => gQ(O, { seed: s })), g = A.items, Q = n.cells.length, h = (O) => {
+  const s = typeof ((uA = A.layout) == null ? void 0 : uA.rngSeed) == "number" ? A.layout.rngSeed : 1, a = i.map((O) => QQ(O, { seed: s })), g = A.items, Q = n.cells.length, h = (O) => {
     const rA = a.filter(O).map((aA) => aA.detail);
     return rA.length ? Math.min(...rA) : void 0;
   }, w = h((O) => O.text), C = h((O) => O.cells), c = n.cells.map((O) => ({
@@ -12665,7 +12665,7 @@ function aB(e, A, r) {
   const y = () => {
     const O = { hovered: /* @__PURE__ */ new Set([...I, ...F]), active: d };
     return a.map(
-      (rA) => Array.from({ length: Q }, (aA, IA) => hQ(rA.on, IA, g, O) ? 1 : 0)
+      (rA) => Array.from({ length: Q }, (aA, IA) => wQ(rA.on, IA, g, O) ? 1 : 0)
     );
   }, x = y(), U = (O, rA) => a.some((aA, IA) => (O === "text" ? aA.text : aA.cells) && x[IA][rA] > 0), R = (O, rA, aA, IA) => O.map((pA) => {
     let DA = pA.x, fA = pA.y;
@@ -12692,13 +12692,13 @@ function aB(e, A, r) {
   let $ = 0, W = 0, b = !0;
   const X = (O) => {
     $ = 0;
-    const rA = Math.min(cQ, W ? O - W : 16);
+    const rA = Math.min(fQ, W ? O - W : 16);
     W = O;
     const aA = y();
     let IA = !1;
     a.forEach((DA, fA) => {
       for (let FA = 0; FA < Q; FA++) {
-        const xA = wQ(x[fA][FA], aA[fA][FA], rA, Y != null && Y.matches ? 0 : DA.ease);
+        const xA = cQ(x[fA][FA], aA[fA][FA], rA, Y != null && Y.matches ? 0 : DA.ease);
         x[fA][FA] = xA, (xA !== aA[fA][FA] || DA.animated && xA > 0) && (IA = !0);
       }
     });
@@ -12734,10 +12734,10 @@ function aB(e, A, r) {
   };
   return Ke.set(e, oA), oA;
 }
-const _r = Gi, $r = /* @__PURE__ */ new Map(), fQ = (e) => {
+const _r = Gi, $r = /* @__PURE__ */ new Map(), CQ = (e) => {
   let A = $r.get(e);
   return A || $r.set(e, A = xg(e)), A;
-}, CQ = `
+}, IQ = `
   :host { display: block; }
   svg { display: block; width: 100%; height: auto; }
 `;
@@ -12751,7 +12751,7 @@ class EB extends HTMLElement {
     ZA(this, "motion");
     ZA(this, "onLocation", () => {
       const r = this.shadow.querySelector("svg");
-      !r || this.getAttribute("active") !== "auto" || iQ(r, Tt(this.currentSpec().items, "auto", location.href));
+      !r || this.getAttribute("active") !== "auto" || sQ(r, Tt(this.currentSpec().items, "auto", location.href));
     });
   }
   connectedCallback() {
@@ -12807,10 +12807,10 @@ class EB extends HTMLElement {
         throw new Error(
           "No items: put <a> links inside the tag, or add an items attribute."
         );
-      const a = await fQ(this.getAttribute("font-url") ?? mi);
+      const a = await CQ(this.getAttribute("font-url") ?? mi);
       if (((n = s.fill) == null ? void 0 : n.type) === "image" && (s = { ...s, items: await An(s.items) }), r !== this.generation) return;
       const g = document.createElement("style");
-      g.textContent = CQ;
+      g.textContent = IQ;
       const Q = oB(s, a, {
         onNavigate: (w, C) => {
           const c = new CustomEvent("cellnav-navigate", {
@@ -12837,13 +12837,13 @@ class EB extends HTMLElement {
 // `cornerfill` is what HTML makes of the camelCase spelling `cornerFill`.
 ZA(EB, "observedAttributes", [..._r, "cornerfill"]);
 customElements.get("cell-nav") || customElements.define("cell-nav", EB);
-const dQ = (e = {}) => ({
+const UQ = (e = {}) => ({
   type: "voronoi",
   ...e
-}), UQ = (e = {}) => ({ type: "noise", ...e }), mQ = (e = {}) => ({ type: "image", ...e }), IQ = (e = {}) => ({
+}), mQ = (e = {}) => ({ type: "noise", ...e }), vQ = (e = {}) => ({ type: "image", ...e }), pQ = (e = {}) => ({
   type: "text",
   ...e
-}), Gt = (e) => e.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "item", pQ = (e) => typeof e == "string" ? { id: Gt(e), label: e, href: `#${Gt(e)}` } : e;
+}), Gt = (e) => e.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "item", DQ = (e) => typeof e == "string" ? { id: Gt(e), label: e, href: `#${Gt(e)}` } : e;
 class $e {
   constructor(A) {
     this.s = A;
@@ -12900,10 +12900,10 @@ class $e {
     return A.replaceChildren(i), { stop: () => s == null ? void 0 : s.stop() };
   }
 }
-const DQ = (e) => new $e({ items: e.map(pQ), width: 1e3, height: 420 });
-function vQ(e, A, r = {}) {
-  let n = DQ([{ id: Gt(e), label: e, href: r.href ?? "#" }]).size(r.width ?? 600, r.height ?? 600).boundary(A).margin(0).fill(
-    IQ({
+const FQ = (e) => new $e({ items: e.map(DQ), width: 1e3, height: 420 });
+function yQ(e, A, r = {}) {
+  let n = FQ([{ id: Gt(e), label: e, href: r.href ?? "#" }]).size(r.width ?? 600, r.height ?? 600).boundary(A).margin(0).fill(
+    pQ({
       padding: r.padding ?? 6,
       ...r.warp !== void 0 && { warp: r.warp },
       ...r.detail !== void 0 && { detail: r.detail },
@@ -12916,21 +12916,21 @@ function vQ(e, A, r = {}) {
   return r.color && (n = n.palette([r.color])), r.stroke && (n = n.boundaryStroke(r.stroke)), n;
 }
 export {
-  rQ as BEHAVIOR_CSS,
+  nQ as BEHAVIOR_CSS,
   $t as BOUNDARY_PRESETS,
   Gi as CELL_NAV_ATTRIBUTES,
   $e as CellNav,
   EB as CellNavElement,
   Xg as DEFAULT_PALETTE,
   nB as DEFAULT_STRETCH,
-  oQ as NOISE_PRESETS,
+  aQ as NOISE_PRESETS,
   Ct as SHAPE_PATHS,
   QA as area,
   ae as bounds,
   iB as buildCells,
   ts as cageCornerTurns,
   jg as cageWarp,
-  DQ as cellNav,
+  FQ as cellNav,
   fe as centroid,
   bi as clipHalfPlane,
   ki as convexHull,
@@ -12938,14 +12938,14 @@ export {
   sn as convexPieces,
   $i as cornerVertices,
   Pi as coverRect,
-  gQ as createEffect,
+  QQ as createEffect,
   qr as createNoise,
   xt as effectRegistry,
   It as frameOf,
-  mQ as image,
+  vQ as image,
   es as inscribedRect,
-  MQ as isConvex,
-  hQ as isSelected,
+  dQ as isConvex,
+  wQ as isSelected,
   Xi as isSimple,
   as as largestConvexPart,
   xg as loadFont,
@@ -12956,30 +12956,30 @@ export {
   Ke as motions,
   eB as mulberry32,
   Li as nearestOnOutline,
-  UQ as noise,
+  mQ as noise,
   As as orientedCage,
   tr as parsePath,
   VA as pathData,
   wt as pointInConvex,
-  EQ as registerEffect,
+  gQ as registerEffect,
   oB as renderNav,
-  BQ as renderSvg,
+  iQ as renderSvg,
   ht as resample,
   Tt as resolveActive,
   Bn as resolveBoundary,
   sB as scenes,
-  iQ as setActive,
+  sQ as setActive,
   Hi as solidity,
   xi as specFromAttributes,
   Lg as splitText,
   aB as startMotion,
-  wQ as stepWeight,
+  cQ as stepWeight,
   Ri as targetAspect,
-  IQ as text,
+  pQ as text,
   bg as textContours,
-  vQ as textInShape,
+  yQ as textInShape,
   ss as trimSpikes,
-  dQ as voronoi,
+  UQ as voronoi,
   Yt as voronoiCells,
   Vg as voronoiLayout
 };

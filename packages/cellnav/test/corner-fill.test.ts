@@ -144,3 +144,54 @@ describe("corner fill only at smooth corners", () => {
     expect(specFromAttributes({ items: "A", cornerFillAt: "nonsense" }, []).fill).not.toHaveProperty("cornerFillAt");
   });
 });
+
+describe("corner fill at the word's ends (prevent-glitch)", () => {
+  // Three round letters in a row: left, middle, right.
+  const three = {
+    getPath: () => ({ commands: [...circle(10, 10), ...circle(30, 10), ...circle(50, 10)] }),
+    getPaths: () => [{ commands: circle(10, 10) }, { commands: circle(30, 10) }, { commands: circle(50, 10) }],
+  } as unknown as Font;
+  const one = {
+    getPath: () => ({ commands: circle(10, 10) }),
+    getPaths: () => [{ commands: circle(10, 10) }],
+  } as unknown as Font;
+
+  const label = (f: Font, word: string, at: "all" | "smooth" | "prevent-glitch", shape = "rectangle") =>
+    buildCells(
+      { ...cellNav([word]).size(600, 200).boundary(shape).margin(0).spec(), fill: { type: "text", cornerFill: 1, cornerFillAt: at } },
+      f,
+    )[0]!.label;
+
+  // Gap from a point to the nearest ink of one contour.
+  const gap = (c: { x: number; y: number }[], x: number, y: number) =>
+    Math.min(...c.map((p) => Math.hypot(p.x - x, p.y - y)));
+
+  it("squares only the outer corners of the first and last letters", () => {
+    const none = buildCells({ ...cellNav(["OOO"]).size(600, 200).boundary("rectangle").margin(0).spec(), fill: { type: "text" } }, three)[0]!.label;
+    const ends = label(three, "OOO", "prevent-glitch");
+    const all = label(three, "OOO", "all");
+    // contours: 0 = left letter, 1 = middle, 2 = right.
+    expect(ends[1]).toEqual(none[1]); // middle letter untouched
+    expect(all[1]).not.toEqual(none[1]); // ...whereas "all" does move it
+    // the left letter's left corners moved, its right corners did not
+    const [l0, l1] = [none[0]!, ends[0]!];
+    const before = (x: number, y: number) => gap(l0, x, y);
+    const after = (x: number, y: number) => gap(l1, x, y);
+    const top = Math.min(...l0.map((p) => p.y));
+    const left = Math.min(...l0.map((p) => p.x));
+    const right = Math.max(...l0.map((p) => p.x));
+    expect(after(left, top)).toBeLessThan(before(left, top) * 0.3); // outer corner filled
+    // The inner corner is not pushed for; it only feels the smooth blend from the outer one.
+    expect(after(right, top)).toBeGreaterThan(before(right, top) * 0.75);
+  });
+
+  it("treats a one-letter word as having both ends", () => {
+    const none = buildCells({ ...cellNav(["O"]).size(600, 200).boundary("rectangle").margin(0).spec(), fill: { type: "text" } }, one)[0]!.label;
+    expect(label(one, "O", "prevent-glitch")).toEqual(label(one, "O", "all"));
+    expect(label(one, "O", "prevent-glitch")).not.toEqual(none);
+  });
+
+  it("reads the attribute", () => {
+    expect(specFromAttributes({ items: "A", cornerFillAt: "prevent-glitch" }, []).fill).toMatchObject({ cornerFillAt: "prevent-glitch" });
+  });
+});
