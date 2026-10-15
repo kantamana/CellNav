@@ -15,6 +15,11 @@ export interface OutlineOptions {
     segmentPx?: number;
     /** 0 to 1: how far rounded letters are squared up into their corners. Default 0. */
     cornerFill?: number;
+    /**
+     * Scales the corner fill at a point of the word's box, given in the unit
+     * square (0, 0 top-left). 1 = full, 0 = none. Default: 1 everywhere.
+     */
+    cornerGate?: (x: number, y: number) => number;
 }
 /**
  * Text as closed contours inside the unit square (stretched to fill it). The

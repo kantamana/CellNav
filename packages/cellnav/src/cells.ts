@@ -2,7 +2,7 @@ import { contains, isConvexPolygon, offset } from "./clip";
 import type { EffectSpec } from "./effects";
 import { area, bounds, centroid, nearestOnOutline, solidity, type Point, type Polygon } from "./geometry";
 import { resolveBoundary } from "./boundary";
-import { frameOf, inscribedRect, orientedCage } from "./orient";
+import { cageCornerTurns, frameOf, inscribedRect, orientedCage } from "./orient";
 import { convexPieces, largestConvexPart } from "./parts";
 import { splitText, textContours, type Font } from "./text";
 import { targetAspect } from "./images";
@@ -57,6 +57,13 @@ export interface Spec {
      * letters (H, E, A, V) do not change.
      */
     cornerFill?: number;
+    /**
+     * Text fill only. Where `cornerFill` applies. "all" (default): at every
+     * corner of every letter. "smooth": only where the cell's matching corner is
+     * practically a straight line (a gentle curve, such as an ellipse's or a
+     * heart's lobe), not at a real corner.
+     */
+    cornerFillAt?: "all" | "smooth";
     /**
      * Text fill only. "cell" (default) draws each cell as a coloured shape with
      * plain text on it. "none" draws no cell at all and colours the text with
@@ -155,11 +162,12 @@ function fitText(
   textShape: Polygon,
   strength: number,
   segmentPx?: number,
-  cornerFill?: number,
+  corner?: { amount: number; smoothOnly: boolean; window: number },
 ): Point[][] {
   const frame = frameOf(textShape);
   const { source, target } = orientedCage(textShape, frame);
   const bend = cageWarp(source, target);
+  const cornerGate = corner?.smoothOnly ? straightCornerGate(cageCornerTurns({ source, target }, corner.window)) : undefined;
   // `warp` eases the bend towards an upright rectangle in the shape. A dented
   // outline has no such rectangle, so there the letters always follow the outline.
   const dented = !isConvexPolygon(textShape, CONVEX_ENOUGH);
@@ -183,7 +191,7 @@ function fitText(
   };
   // Sample the outline finely enough for the size it is about to be drawn at.
   const box = bounds(textShape);
-  return textContours(font, text, { width: box.width, height: box.height, segmentPx, cornerFill }).map((c) =>
+  return textContours(font, text, { width: box.width, height: box.height, segmentPx, cornerFill: corner?.amount, cornerGate }).map((c) =>
     c.map(place),
   );
 }
@@ -195,6 +203,27 @@ const CONVEX_ENOUGH = 0.5;
 
 /** Most convex pieces a dented cell is cut into when the word is spread over it. */
 const SPREAD_PIECES = 6;
+
+/** A cell corner that turns less than this (degrees, over a short stretch) counts as a straight line. */
+const STRAIGHT_BELOW = 12;
+/** One that turns more than this is a real corner. */
+const CORNER_ABOVE = 30;
+
+/**
+ * Corner fill's weight anywhere in the word's unit box, from how real each of
+ * the cell's four corners (top-left, top-right, bottom-right, bottom-left,
+ * given as turn angles in radians) is: 1 where the cell's corner is practically
+ * a straight line, 0 at a real corner, blended between them across the box.
+ */
+function straightCornerGate(turns: number[]) {
+  const gates = turns.map((t) => {
+    const deg = (t * 180) / Math.PI;
+    const x = Math.min(1, Math.max(0, (deg - STRAIGHT_BELOW) / (CORNER_ABOVE - STRAIGHT_BELOW)));
+    return 1 - x * x * (3 - 2 * x);
+  });
+  return (x: number, y: number) =>
+    (1 - x) * (1 - y) * gates[0]! + x * (1 - y) * gates[1]! + x * y * gates[2]! + (1 - x) * y * gates[3]!;
+}
 
 /** Below this solidity (area over convex hull area) a cell counts as deeply dented. */
 const DENTED = 0.85;
@@ -233,7 +262,12 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
   const palette = spec.palette ?? DEFAULT_PALETTE;
   const padding = spec.fill?.padding ?? 10;
   const detail = spec.fill?.detail;
-  const cornerFill = spec.fill?.cornerFill;
+  const corner = {
+    amount: spec.fill?.cornerFill ?? 0,
+    smoothOnly: spec.fill?.cornerFillAt === "smooth",
+    // Wide enough to see a corner rounded off by the padding, narrow enough that a gentle curve is not one.
+    window: Math.max(6, 1.5 * padding),
+  };
   const spread = spec.fill?.flow === "spread";
   // warp = 1 bends text to the whole cell; 0 sets it upright in a rectangle.
   const strength = Math.min(1, Math.max(0, spec.fill?.warp ?? 1));
@@ -261,11 +295,11 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
         return Math.max(...s) - Math.min(...s);
       });
       contours = splitText(font, label, lengths).flatMap((chunk) =>
-        fitText(font, chunk.text, order[chunk.piece]!, strength, detail, cornerFill),
+        fitText(font, chunk.text, order[chunk.piece]!, strength, detail, corner),
       );
     } else {
       const target = solidity(shape) >= DENTED ? shape : largestConvexPart(shape);
-      contours = fitText(font, label, pulledIn(target, padding), strength, detail, cornerFill);
+      contours = fitText(font, label, pulledIn(target, padding), strength, detail, corner);
     }
 
     return {

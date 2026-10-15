@@ -43,6 +43,7 @@ Items can also come from an attribute: `items="Home,About,Work"` (links become `
 | The whole nav in a shape (heart, ellipse, ...) | `boundary="heart"` (plus `boundary-stroke="#000"` for an outline) |
 | One word bent to fill one shape | `<cell-nav items="LOVE" boundary="heart" width="600" height="600" margin="0" padding="6">` |
 | Round letters (O, C, S) fill the cell's corners | `corner-fill="1"` |
+| Corner fill only where the cell is smooth, not at real corners | `corner-fill="1" corner-fill-at="smooth"` |
 | Hand-drawn, rough letters | `noise` (frozen), or `noise="jitter"` (moving) |
 | Only the hovered cell wobbles | `noise="wobble" noise-on="hover"` |
 | Letters keep their thickness while wobbling | `noise-mode="shear"` (the opposite, strokes pinch and bulge: `swell`) |
@@ -73,6 +74,7 @@ All optional except the items. Numbers that are not valid are ignored (never an 
 - `background`: `cell` (default) or `none` (no fill, the cell's color goes on the text).
 - `text-detail` (default 2.5): longest stretch of letter outline in px. Lower is smoother, higher is lighter.
 - `corner-fill` (0 to 1, default 0 = off; also written `cornerFill`, which HTML lowercases to `cornerfill`): pushes rounded letters (O, C, S, the bowl of a D) out into the corners of their box so they fill a straight-cornered cell instead of leaving a gap. Straight letters (H, E, A, V) do not change. Also `cornerFill` in `CellNav.text({...})` and `textInShape`.
+- `corner-fill-at` (`all` default, or `smooth`): with `smooth`, corner fill only happens where the cell's matching corner is practically a straight line (a gentle curve such as an ellipse's edge or a heart's lobe), not at a real corner. Also `cornerFillAt` in `CellNav.text({...})` and `textInShape`.
 - `text-flow`: `outline` (default) bends the word onto a dented cell's outline, or into its biggest convex part if deeply dented; `spread` cuts a dented cell into convex pieces and breaks the word across them like line breaks, preferring spaces.
 
 **Pictures** (`fill="image"`)

@@ -42,3 +42,12 @@ export declare function orientedCage(poly: Polygon, frame: Frame): OrientedCage;
  * top-right, bottom-right, bottom-left, in page coordinates.
  */
 export declare function inscribedRect(poly: Polygon, frame: Frame): [Point, Point, Point, Point];
+/**
+ * How sharply the outline turns at each of the cage's four corners (top-left,
+ * top-right, bottom-right, bottom-left), in radians: 0 is a straight line and
+ * PI / 2 a right angle. The turn is measured between the outline `window` px
+ * before the corner and `window` px after it, so a corner that has been
+ * rounded off by a few px still counts as a corner, while a gentle curve
+ * (an ellipse, a heart's lobe) counts as nearly straight.
+ */
+export declare function cageCornerTurns(cage: OrientedCage, window: number): number[];

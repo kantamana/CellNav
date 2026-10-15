@@ -28,6 +28,11 @@ export interface OutlineOptions {
   segmentPx?: number;
   /** 0 to 1: how far rounded letters are squared up into their corners. Default 0. */
   cornerFill?: number;
+  /**
+   * Scales the corner fill at a point of the word's box, given in the unit
+   * square (0, 0 top-left). 1 = full, 0 = none. Default: 1 everywhere.
+   */
+  cornerGate?: (x: number, y: number) => number;
 }
 
 /** A corner gap (as a share of the half-box) below this is "touching", above `GAP_FULL` is a real round corner. */
@@ -50,7 +55,11 @@ const smooth = (a: number, b: number, x: number) => {
  * are moved along the line from the letter's centre, so the push is zero on
  * the axes and the outline stays smooth.
  */
-function squareCorners(contours: Point[][], amount: number): void {
+function squareCorners(
+  contours: Point[][],
+  amount: number,
+  gate: (x: number, y: number) => number = () => 1,
+): void {
   const pts = contours.flat();
   if (!pts.length) return;
   const xs = pts.map((p) => p.x);
@@ -65,7 +74,10 @@ function squareCorners(contours: Point[][], amount: number): void {
     for (const sy of [-1, 1]) {
       let gap = Infinity;
       for (const p of pts) gap = Math.min(gap, Math.hypot((p.x - cx) / hx - sx, (p.y - cy) / hy - sy));
-      strength.set(`${sx},${sy}`, smooth(GAP_TOUCH, GAP_ROUND, gap) * (1 - smooth(GAP_POINTED, GAP_FAR, gap)));
+      strength.set(
+        `${sx},${sy}`,
+        smooth(GAP_TOUCH, GAP_ROUND, gap) * (1 - smooth(GAP_POINTED, GAP_FAR, gap)) * gate(cx + sx * hx, cy + sy * hy),
+      );
     }
   for (const c of contours)
     for (const p of c) {
@@ -187,10 +199,6 @@ export function textContours(font: Font, text: string, opts: OutlineOptions = {}
   }
   }
   flush();
-  if (amount > 0) {
-    for (let l = 1; l <= letter; l++)
-      squareCorners(contours.filter((_, i) => letterOf[i] === l), amount);
-  }
 
   // Fit the unit square to the outline itself.
   let fx = Infinity;
@@ -206,6 +214,14 @@ export function textContours(font: Font, text: string, opts: OutlineOptions = {}
     }
   const w = fX - fx || 1;
   const h = fY - fy || 1;
+
+  // Squaring only moves ink inside each letter's own box, so the fit above still holds.
+  if (amount > 0) {
+    const gate = opts.cornerGate;
+    const inWord = gate && ((x: number, y: number) => gate((x - fx) / w, (y - fy) / h));
+    for (let l = 1; l <= letter; l++)
+      squareCorners(contours.filter((_, i) => letterOf[i] === l), amount, inWord);
+  }
 
   // Normalise, then split long straight runs so the warp can bend them.
   return contours.map((c) => {

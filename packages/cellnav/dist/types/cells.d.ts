@@ -52,6 +52,13 @@ export interface Spec {
          */
         cornerFill?: number;
         /**
+         * Text fill only. Where `cornerFill` applies. "all" (default): at every
+         * corner of every letter. "smooth": only where the cell's matching corner is
+         * practically a straight line (a gentle curve, such as an ellipse's or a
+         * heart's lobe), not at a real corner.
+         */
+        cornerFillAt?: "all" | "smooth";
+        /**
          * Text fill only. "cell" (default) draws each cell as a coloured shape with
          * plain text on it. "none" draws no cell at all and colours the text with
          * the cell's colour instead. The cell is still clickable, and a faint tint

@@ -266,3 +266,52 @@ export function inscribedRect(
   const { hu, hv } = best;
   return [at(-hu, -hv), at(hu, -hv), at(hu, hv), at(-hu, hv)];
 }
+
+/** The point `dist` of outline length from vertex `i` along the closed ring, forwards (+) or backwards (-). */
+function alongRing(ring: Polygon, i: number, dist: number): Point {
+  const n = ring.length;
+  const step = dist >= 0 ? 1 : -1;
+  let left = Math.abs(dist);
+  let at = i;
+  for (let k = 0; k < n; k++) {
+    const next = (at + step + n) % n;
+    const a = ring[at]!;
+    const b = ring[next]!;
+    const d = Math.hypot(b.x - a.x, b.y - a.y);
+    if (d >= left) {
+      const t = d > 0 ? left / d : 0;
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    }
+    left -= d;
+    at = next;
+  }
+  return ring[i]!;
+}
+
+/**
+ * How sharply the outline turns at each of the cage's four corners (top-left,
+ * top-right, bottom-right, bottom-left), in radians: 0 is a straight line and
+ * PI / 2 a right angle. The turn is measured between the outline `window` px
+ * before the corner and `window` px after it, so a corner that has been
+ * rounded off by a few px still counts as a corner, while a gentle curve
+ * (an ellipse, a heart's lobe) counts as nearly straight.
+ */
+export function cageCornerTurns(cage: OrientedCage, window: number): number[] {
+  const corners = [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 1, y: 1 },
+    { x: 0, y: 1 },
+  ];
+  return corners.map((c) => {
+    const i = cage.source.findIndex((s) => s.x === c.x && s.y === c.y);
+    if (i < 0) return Math.PI;
+    const ring = cage.target;
+    const p = ring[i]!;
+    const before = alongRing(ring, i, -window);
+    const after = alongRing(ring, i, window);
+    const a = { x: p.x - before.x, y: p.y - before.y };
+    const b = { x: after.x - p.x, y: after.y - p.y };
+    return Math.abs(Math.atan2(a.x * b.y - a.y * b.x, a.x * b.x + a.y * b.y));
+  });
+}

@@ -92,3 +92,55 @@ describe("corner fill", () => {
     expect(buildCells(spec, font)).toHaveLength(1);
   });
 });
+
+import { cageCornerTurns, frameOf, orientedCage } from "../src/orient";
+import { resolveBoundary } from "../src";
+
+describe("corner fill only at smooth corners", () => {
+  const turnsOf = (poly: { x: number; y: number }[], window = 15) =>
+    cageCornerTurns(orientedCage(poly, frameOf(poly)), window).map((t) => (t * 180) / Math.PI);
+
+  it("sees a rectangle's corners as real and an ellipse's as nearly straight", () => {
+    const rect = [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 200 }, { x: 0, y: 200 }];
+    for (const t of turnsOf(rect)) expect(t).toBeGreaterThan(80);
+    const ellipse = resolveBoundary("ellipse", 400, 200);
+    for (const t of turnsOf(ellipse)) expect(t).toBeLessThan(12);
+  });
+
+  it("a corner rounded off by a few px still counts as a corner", () => {
+    const r = 8;
+    const round: { x: number; y: number }[] = [];
+    for (const [cx, cy, a0] of [[400 - r, r, -90], [400 - r, 200 - r, 0], [r, 200 - r, 90], [r, r, 180]] as const)
+      for (let i = 0; i <= 8; i++) {
+        const a = ((a0 + (i / 8) * 90) * Math.PI) / 180;
+        round.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+      }
+    for (const t of turnsOf(round, 15)) expect(t).toBeGreaterThan(60);
+  });
+
+  const cellsWith = (shape: string, at?: "all" | "smooth") =>
+    buildCells(
+      {
+        ...cellNav(["OH"]).size(400, 200).boundary(shape).margin(0).spec(),
+        fill: { type: "text", cornerFill: 1, ...(at && { cornerFillAt: at }) },
+      },
+      font,
+    )[0]!.label;
+
+  it("changes nothing at a real corner (a rectangle)", () => {
+    expect(cellsWith("rectangle", "smooth")).toEqual(cellsWith("rectangle", "smooth"));
+    const plain = buildCells({ ...cellNav(["OH"]).size(400, 200).boundary("rectangle").margin(0).spec(), fill: { type: "text" } }, font)[0]!.label;
+    expect(cellsWith("rectangle", "smooth")).toEqual(plain);
+  });
+
+  it("still fills where the cell is smooth (an ellipse), same as 'all'", () => {
+    expect(cellsWith("ellipse", "smooth")).toEqual(cellsWith("ellipse", "all"));
+    const none = buildCells({ ...cellNav(["OH"]).size(400, 200).boundary("ellipse").margin(0).spec(), fill: { type: "text" } }, font)[0]!.label;
+    expect(cellsWith("ellipse", "smooth")).not.toEqual(none);
+  });
+
+  it("reads the attribute and the builder option", () => {
+    expect(specFromAttributes({ items: "A", cornerFillAt: "smooth" }, []).fill).toMatchObject({ cornerFillAt: "smooth" });
+    expect(specFromAttributes({ items: "A", cornerFillAt: "nonsense" }, []).fill).not.toHaveProperty("cornerFillAt");
+  });
+});
