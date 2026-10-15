@@ -45,6 +45,13 @@ export interface Spec {
          */
         detail?: number;
         /**
+         * Text fill only. 0 to 1 (default 1, 0 turns it off): how far rounded letters (O, C, S,
+         * the bowl of a D) are pushed out into the corners of their box, so they
+         * fill a straight-cornered cell instead of leaving a gap there. Straight
+         * letters (H, E, A, V) do not change.
+         */
+        cornerFill?: number;
+        /**
          * Text fill only. "cell" (default) draws each cell as a coloured shape with
          * plain text on it. "none" draws no cell at all and colours the text with
          * the cell's colour instead. The cell is still clickable, and a faint tint

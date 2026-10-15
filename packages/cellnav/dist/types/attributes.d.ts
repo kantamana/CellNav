@@ -16,6 +16,7 @@ export interface Attrs {
     labels?: string | null;
     background?: string | null;
     textDetail?: string | null;
+    cornerFill?: string | null;
     textFlow?: string | null;
     organic?: string | null;
     boundary?: string | null;
@@ -41,4 +42,4 @@ export interface Attrs {
  */
 export declare function specFromAttributes(attrs: Attrs, childItems: Item[]): Spec;
 /** Every attribute `<cell-nav>` reads (and re-renders on). */
-export declare const CELL_NAV_ATTRIBUTES: readonly ["items", "spec", "width", "height", "stretch", "seed", "margin", "warp", "padding", "active", "fill", "aspect-blend", "noise", "effects", "noise-target", "noise-on", "noise-size", "noise-amount", "noise-scale", "noise-speed", "noise-seed", "noise-ease", "noise-mode", "noise-preserve", "shape-fit", "labels", "background", "text-detail", "text-flow", "organic", "boundary", "boundary-stroke", "relaxation", "palette", "font-url"];
+export declare const CELL_NAV_ATTRIBUTES: readonly ["items", "spec", "width", "height", "stretch", "seed", "margin", "warp", "padding", "active", "fill", "aspect-blend", "noise", "effects", "noise-target", "noise-on", "noise-size", "noise-amount", "noise-scale", "noise-speed", "noise-seed", "noise-ease", "noise-mode", "noise-preserve", "shape-fit", "labels", "background", "text-detail", "corner-fill", "text-flow", "organic", "boundary", "boundary-stroke", "relaxation", "palette", "font-url"];

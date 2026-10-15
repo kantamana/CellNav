@@ -51,6 +51,13 @@ export interface Spec {
      */
     detail?: number;
     /**
+     * Text fill only. 0 to 1 (default 1, 0 turns it off): how far rounded letters (O, C, S,
+     * the bowl of a D) are pushed out into the corners of their box, so they
+     * fill a straight-cornered cell instead of leaving a gap there. Straight
+     * letters (H, E, A, V) do not change.
+     */
+    cornerFill?: number;
+    /**
      * Text fill only. "cell" (default) draws each cell as a coloured shape with
      * plain text on it. "none" draws no cell at all and colours the text with
      * the cell's colour instead. The cell is still clickable, and a faint tint
@@ -148,6 +155,7 @@ function fitText(
   textShape: Polygon,
   strength: number,
   segmentPx?: number,
+  cornerFill?: number,
 ): Point[][] {
   const frame = frameOf(textShape);
   const { source, target } = orientedCage(textShape, frame);
@@ -175,7 +183,7 @@ function fitText(
   };
   // Sample the outline finely enough for the size it is about to be drawn at.
   const box = bounds(textShape);
-  return textContours(font, text, { width: box.width, height: box.height, segmentPx }).map((c) =>
+  return textContours(font, text, { width: box.width, height: box.height, segmentPx, cornerFill }).map((c) =>
     c.map(place),
   );
 }
@@ -187,6 +195,9 @@ const CONVEX_ENOUGH = 0.5;
 
 /** Most convex pieces a dented cell is cut into when the word is spread over it. */
 const SPREAD_PIECES = 6;
+
+/** How far rounded letters are squared into their corners unless the Spec says otherwise. */
+const DEFAULT_CORNER_FILL = 1;
 
 /** Below this solidity (area over convex hull area) a cell counts as deeply dented. */
 const DENTED = 0.85;
@@ -225,6 +236,7 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
   const palette = spec.palette ?? DEFAULT_PALETTE;
   const padding = spec.fill?.padding ?? 10;
   const detail = spec.fill?.detail;
+  const cornerFill = spec.fill?.cornerFill ?? DEFAULT_CORNER_FILL;
   const spread = spec.fill?.flow === "spread";
   // warp = 1 bends text to the whole cell; 0 sets it upright in a rectangle.
   const strength = Math.min(1, Math.max(0, spec.fill?.warp ?? 1));
@@ -252,11 +264,11 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
         return Math.max(...s) - Math.min(...s);
       });
       contours = splitText(font, label, lengths).flatMap((chunk) =>
-        fitText(font, chunk.text, order[chunk.piece]!, strength, detail),
+        fitText(font, chunk.text, order[chunk.piece]!, strength, detail, cornerFill),
       );
     } else {
       const target = solidity(shape) >= DENTED ? shape : largestConvexPart(shape);
-      contours = fitText(font, label, pulledIn(target, padding), strength, detail);
+      contours = fitText(font, label, pulledIn(target, padding), strength, detail, cornerFill);
     }
 
     return {

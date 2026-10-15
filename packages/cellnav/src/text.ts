@@ -26,6 +26,64 @@ export interface OutlineOptions {
   height?: number;
   /** Longest stretch of finished outline, in px. Default 2.5. */
   segmentPx?: number;
+  /** 0 to 1: how far rounded letters are squared up into their corners. Default 0 here; the cell pipeline passes its own default (1). */
+  cornerFill?: number;
+}
+
+/** A corner gap (as a share of the half-box) below this is "touching", above `GAP_FULL` is a real round corner. */
+const GAP_TOUCH = 0.03;
+const GAP_ROUND = 0.15;
+/** A gap past these is a point or flat end (A's apex, V's tip), not a round corner. */
+const GAP_POINTED = 0.5;
+const GAP_FAR = 0.75;
+
+const smooth = (a: number, b: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Pushes the rounded corners of one letter out into its box's corners (an O
+ * becomes a rounded square). Each corner is judged on its own and blended smoothly: where the ink
+ * already touches the corner (H, E, the left of a D) or is only a pointed or
+ * flat end (A, V) nothing moves, so straight letters stay straight. Points
+ * are moved along the line from the letter's centre, so the push is zero on
+ * the axes and the outline stays smooth.
+ */
+function squareCorners(contours: Point[][], amount: number): void {
+  const pts = contours.flat();
+  if (!pts.length) return;
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const hx = (Math.max(...xs) - Math.min(...xs)) / 2 || 1;
+  const hy = (Math.max(...ys) - Math.min(...ys)) / 2 || 1;
+  // How strongly each corner (by sign of x, then y) is rounded.
+  const strength = new Map<string, number>();
+  for (const sx of [-1, 1])
+    for (const sy of [-1, 1]) {
+      let gap = Infinity;
+      for (const p of pts) gap = Math.min(gap, Math.hypot((p.x - cx) / hx - sx, (p.y - cy) / hy - sy));
+      strength.set(`${sx},${sy}`, smooth(GAP_TOUCH, GAP_ROUND, gap) * (1 - smooth(GAP_POINTED, GAP_FAR, gap)));
+    }
+  for (const c of contours)
+    for (const p of c) {
+      const dx = (p.x - cx) / hx;
+      const dy = (p.y - cy) / hy;
+      const edge = Math.max(Math.abs(dx), Math.abs(dy));
+      if (edge < 1e-9) continue;
+      // The four corners' strengths, blended smoothly so the push has no kink at the axes.
+      let s = 0;
+      for (const sx of [-1, 1])
+        for (const sy of [-1, 1])
+          s += strength.get(`${sx},${sy}`)! * ((1 + sx * dx) / 2) * ((1 + sy * dy) / 2);
+      // Circle to square, but never past the box.
+      const full = Math.min(Math.hypot(dx, dy) / edge, 1 / edge);
+      const k = 1 + amount * s * (full - 1);
+      p.x = cx + dx * k * hx;
+      p.y = cy + dy * k * hy;
+    }
 }
 
 /**
@@ -72,15 +130,26 @@ export function textContours(font: Font, text: string, opts: OutlineOptions = {}
   };
 
   const contours: Point[][] = [];
+  // Which letter each contour belongs to (only needed to square corners).
+  const letterOf: number[] = [];
+  let letter = 0;
   let cur: Point[] = [];
   let last: Point = { x: 0, y: 0 };
 
   const flush = () => {
-    if (cur.length > 1) contours.push(cur);
+    if (cur.length > 1) {
+      contours.push(cur);
+      letterOf.push(letter);
+    }
     cur = [];
   };
 
-  for (const cmd of path.commands) {
+  const amount = Math.min(1, Math.max(0, opts.cornerFill ?? 0));
+  const letters = amount > 0 && typeof font.getPaths === "function" ? font.getPaths(text, 0, 0, 100) : [path];
+  for (const glyph of letters) {
+    letter++;
+    flush();
+  for (const cmd of glyph.commands) {
     if (cmd.type === "M") {
       flush();
       last = { x: cmd.x, y: cmd.y };
@@ -116,7 +185,12 @@ export function textContours(font: Font, text: string, opts: OutlineOptions = {}
       flush();
     }
   }
+  }
   flush();
+  if (amount > 0) {
+    for (let l = 1; l <= letter; l++)
+      squareCorners(contours.filter((_, i) => letterOf[i] === l), amount);
+  }
 
   // Fit the unit square to the outline itself.
   let fx = Infinity;

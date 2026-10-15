@@ -18,6 +18,7 @@ export interface Attrs {
   labels?: string | null;
   background?: string | null;
   textDetail?: string | null;
+  cornerFill?: string | null;
   textFlow?: string | null;
   organic?: string | null;
   boundary?: string | null;
@@ -158,6 +159,7 @@ export function specFromAttributes(attrs: Attrs, childItems: Item[]): Spec {
   const labels = attrs.labels?.trim();
   const background = attrs.background?.trim().toLowerCase();
   const detail = num(attrs.textDetail);
+  const cornerFill = num(attrs.cornerFill);
   const flow = attrs.textFlow?.trim().toLowerCase();
   spec.fill = {
     type: attrs.fill?.trim() === "image" ? "image" : "text",
@@ -166,6 +168,7 @@ export function specFromAttributes(attrs: Attrs, childItems: Item[]): Spec {
     ...(labels === "hover" || labels === "always" || labels === "none" ? { labels } : {}),
     ...(background === "none" || background === "cell" ? { background } : {}),
     ...(detail !== undefined && detail > 0 && { detail }),
+    ...(cornerFill !== undefined && { cornerFill }),
     ...(flow === "spread" || flow === "outline" ? { flow } : {}),
     ...(warp !== undefined && { warp }),
     ...(padding !== undefined && { padding }),
@@ -216,6 +219,7 @@ export const CELL_NAV_ATTRIBUTES = [
   "labels",
   "background",
   "text-detail",
+  "corner-fill",
   "text-flow",
   "organic",
   "boundary",

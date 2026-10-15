@@ -13,6 +13,8 @@ export interface OutlineOptions {
     height?: number;
     /** Longest stretch of finished outline, in px. Default 2.5. */
     segmentPx?: number;
+    /** 0 to 1: how far rounded letters are squared up into their corners. Default 0 here; the cell pipeline passes its own default (1). */
+    cornerFill?: number;
 }
 /**
  * Text as closed contours inside the unit square (stretched to fill it). The
