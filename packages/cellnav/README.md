@@ -6,8 +6,10 @@ Everything is plain SVG. The layout is **static and reproducible**: the same att
 
 ## Quick start
 
-1. Build once (`npm install && npm run build` in this folder). This writes `dist/cellnav.iife.js` (one file, the default font is inside it).
-2. Copy that file to your site and add it once per page:
+1. Get the one file `cellnav.iife.js` (the default font is inside it). Download the built copy from GitHub, no build needed:
+   `curl -o cellnav.iife.js https://raw.githubusercontent.com/kantamana/CellNav/warp/packages/cellnav/dist/cellnav.iife.js`
+   (or build it yourself: `npm install && npm run build` in this folder, which writes `dist/cellnav.iife.js`).
+2. Put that file on your site and add it once per page:
 
 ```html
 <script src="cellnav.iife.js"></script>
@@ -95,6 +97,35 @@ All optional except the items. Numbers that are not valid are ignored (never an 
 - `noise-mode`: `shear` (x moves by the noise of y and y by the noise of x: keeps stroke thickness) or `swell` (the opposite); leave out for independent noise. `noise-preserve="area"` is the old name for `shear`.
 - `effects`: a JSON list of effects, for several at once or for ones you registered: `effects='[{"type":"noise","preset":"wobble","target":"cells"},{"type":"shake","on":"hover"}]'`.
 - Animation respects the visitor's "reduce motion" setting (it freezes), pauses while off-screen, and stops when the element is removed.
+
+## React and Next.js
+
+Use `react/CellNav.tsx`: copy it into your app, and put `dist/cellnav.iife.js` where your site serves static files (in Next.js, the `public/` folder). `examples/next/` is a complete working Next.js (App Router) site made with it.
+
+```tsx
+"use client";
+import { useRouter, usePathname } from "next/navigation";
+import { CellNav } from "@/components/CellNav";
+
+const items = [{ label: "Home", href: "/" }, { label: "About", href: "/about" }];
+
+export function SiteNav() {
+  const router = useRouter();
+  const path = usePathname();
+  return (
+    <CellNav
+      items={items}
+      active={items.find((i) => i.href === path)?.label.toLowerCase()}
+      onNavigate={({ href }) => router.push(href)}   // route without a page reload
+      stretch={2.8} seed={7} height={260}
+    />
+  );
+}
+```
+
+- The component adds the script in the browser only, so nothing runs on the server. The server sends plain links, and the cells draw once the script loads. Do not `import "cellnav"` in server code: the tag needs the browser.
+- Props: `items` (required), `active` (an item id, i.e. its label in lower case; pass it from your router, because `"auto"` only follows full page loads), `onNavigate`, `onError`, the common attributes as camelCase props (`width height stretch seed margin padding palette boundary background cornerFill cornerFillAt textFlow`), `attrs` for any other attribute by its dashed name (`attrs={{ noise: "wobble" }}`), `scriptSrc`, `className`, `style`. `cornerFill` defaults to 1 and `cornerFillAt` to `"prevent-glitch"` here. There is no `warp` prop on purpose.
+- Changing `items` rebuilds the tag (it does not watch its links). Works with React 18 and 19.
 
 ## Events and theming
 

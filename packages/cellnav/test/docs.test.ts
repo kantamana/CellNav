@@ -4,6 +4,8 @@ import { CELL_NAV_ATTRIBUTES } from "../src/attributes";
 import { BEHAVIOR_CSS } from "../src/render";
 import readme from "../README.md?raw";
 import agents from "../AGENTS.md?raw";
+import reactWrapper from "../react/CellNav.tsx?raw";
+import nextCopy from "../examples/next/components/CellNav.tsx?raw";
 
 // The README is what another person (or agent) builds a website from, so it must not drift from the code.
 const mentions = (word: string) => readme.includes("`" + word + "`") || readme.includes("`" + word + "=") || readme.includes(word + "=\"");
@@ -54,5 +56,14 @@ describe("the README matches the code", () => {
     expect(readme).not.toMatch(/Use [^.\n]*warp="0\.\d/);
     expect(agents).toContain("Never set `warp` below 1");
     expect(agents).toContain('corner-fill-at="prevent-glitch"');
+  });
+
+  it("documents the React wrapper, and the Next example uses an identical copy of it", () => {
+    expect(readme).toContain("react/CellNav.tsx");
+    expect(nextCopy).toBe(reactWrapper);
+    // Every prop the README lists exists in the component.
+    for (const p of ["items", "active", "onNavigate", "onError", "attrs", "scriptSrc", "cornerFill", "cornerFillAt", "textFlow"])
+      expect(reactWrapper).toContain(p);
+    expect(reactWrapper).not.toMatch(/\bwarp\b/);
   });
 });

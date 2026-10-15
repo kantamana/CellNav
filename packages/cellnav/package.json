@@ -33,6 +33,7 @@
   },
   "files": [
     "dist",
+    "react",
     "README.md",
     "AGENTS.md"
   ]

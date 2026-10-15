@@ -3,7 +3,9 @@
 CellNav is a `<cell-nav>` web component: a navbar of cells with text or pictures bent to fill them.
 
 - **To build a website with it:** read `README.md` (quick start, recipes, every attribute, events, JS API, pitfalls). `examples/site/` is a complete small site made only from that README; copy its pattern.
-- **Setup:** `npm install && npm run build`, then copy `dist/cellnav.iife.js` next to your HTML and add `<script src="cellnav.iife.js"></script>`.
+- **React / Next.js:** use `react/CellNav.tsx` (see the README section "React and Next.js" and the working app in `examples/next/`). Do not import the package in server code.
+- **Setup (no build needed):** `curl -o cellnav.iife.js https://raw.githubusercontent.com/kantamana/CellNav/warp/packages/cellnav/dist/cellnav.iife.js`, put it next to your HTML and add `<script src="cellnav.iife.js"></script>`. For React/Next also `curl -o CellNav.tsx https://raw.githubusercontent.com/kantamana/CellNav/warp/packages/cellnav/react/CellNav.tsx`.
+- **Docs live on GitHub too:** https://raw.githubusercontent.com/kantamana/CellNav/warp/packages/cellnav/README.md (read it first; this file is https://raw.githubusercontent.com/kantamana/CellNav/warp/packages/cellnav/AGENTS.md). Everything is on the `warp` branch until it is merged to `main`; then replace `warp` with `main` in these URLs.
 - **While building a page, listen for errors:** `document.addEventListener("cellnav-error", e => console.warn(e.detail))`. Bad attributes never throw; the tag reports them there.
 - **Every feature, with live editable code:** `npm run dev`, open `/embed-demo/index.html`.
 - **Before changing the library:** `npm test` (must stay green), `CONTEXT.md` has the vocabulary, `docs/adr/` the decisions. Rebuild after source changes (pages load `dist/`).
