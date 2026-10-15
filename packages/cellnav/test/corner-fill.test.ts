@@ -34,15 +34,15 @@ const inkBounds = (cs: { x: number; y: number }[][]) => {
 const gapAt = (cs: { x: number; y: number }[][], x0: number, y0: number) =>
   Math.min(...cs.flat().map((p) => Math.hypot(p.x - x0, p.y - y0)));
 
-describe("corner fill is on by default", () => {
+describe("corner fill is off by default", () => {
   const spec = (cornerFill?: number) => ({
     ...cellNav(["OH"]).spec(),
     fill: { type: "text" as const, ...(cornerFill !== undefined && { cornerFill }) },
   });
   const label = (cornerFill?: number) => buildCells(spec(cornerFill), font)[0]!.label;
-  it("matches an explicit 1 and differs from 0", () => {
-    expect(label()).toEqual(label(1));
-    expect(label()).not.toEqual(label(0));
+  it("matches an explicit 0 and differs from 1", () => {
+    expect(label()).toEqual(label(0));
+    expect(label()).not.toEqual(label(1));
   });
 });
 

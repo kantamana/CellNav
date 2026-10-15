@@ -41,7 +41,8 @@ const STYLE = `
  *   <cell-nav><a href="/about">About</a><a href="/blog">Blog</a></cell-nav>
  */
 export class CellNavElement extends HTMLElement {
-  static observedAttributes = ATTRS;
+  // `cornerfill` is what HTML makes of the camelCase spelling `cornerFill`.
+  static observedAttributes = [...ATTRS, "cornerfill"];
 
   private shadow = this.attachShadow({ mode: "open" });
   private pending = false;
@@ -112,6 +113,7 @@ export class CellNavElement extends HTMLElement {
       if (name !== "font-url")
         attrs[name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())] = this.getAttribute(name);
     }
+    attrs.cornerFill ??= this.getAttribute("cornerfill");
     const spec = specFromAttributes(attrs as Attrs, this.childItems());
     // Pick the random layout once per tag, so editing other attributes
     // doesn't reshuffle the cells under the reader.

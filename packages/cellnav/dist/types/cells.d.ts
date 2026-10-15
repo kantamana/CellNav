@@ -45,7 +45,7 @@ export interface Spec {
          */
         detail?: number;
         /**
-         * Text fill only. 0 to 1 (default 1, 0 turns it off): how far rounded letters (O, C, S,
+         * Text fill only. 0 to 1 (default 0, off): how far rounded letters (O, C, S,
          * the bowl of a D) are pushed out into the corners of their box, so they
          * fill a straight-cornered cell instead of leaving a gap there. Straight
          * letters (H, E, A, V) do not change.

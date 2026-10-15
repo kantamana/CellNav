@@ -58,7 +58,7 @@ export const text = (
     background?: "cell" | "none";
     /** Longest stretch of letter outline in px (default 2.5). */
     detail?: number;
-    /** 0 to 1 (default 1, 0 = off): push rounded letters (O, C, S) out into their corners. */
+    /** 0 to 1 (default 0, off): push rounded letters (O, C, S) out into their corners. */
     cornerFill?: number;
     /** "spread": in a cell with dents, break the word across convex pieces like line breaks. */
     flow?: "outline" | "spread";
@@ -170,7 +170,7 @@ export function textInShape(
     warp?: number;
     /** Longest stretch of letter outline in px (default 2.5). */
     detail?: number;
-    /** 0 to 1 (default 1, 0 = off): push rounded letters (O, C, S) out into their corners. */
+    /** 0 to 1 (default 0, off): push rounded letters (O, C, S) out into their corners. */
     cornerFill?: number;
     /** "spread": break the word across the shape's convex parts, like line breaks. */
     flow?: "outline" | "spread";

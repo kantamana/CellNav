@@ -51,7 +51,7 @@ export interface Spec {
      */
     detail?: number;
     /**
-     * Text fill only. 0 to 1 (default 1, 0 turns it off): how far rounded letters (O, C, S,
+     * Text fill only. 0 to 1 (default 0, off): how far rounded letters (O, C, S,
      * the bowl of a D) are pushed out into the corners of their box, so they
      * fill a straight-cornered cell instead of leaving a gap there. Straight
      * letters (H, E, A, V) do not change.
@@ -196,9 +196,6 @@ const CONVEX_ENOUGH = 0.5;
 /** Most convex pieces a dented cell is cut into when the word is spread over it. */
 const SPREAD_PIECES = 6;
 
-/** How far rounded letters are squared into their corners unless the Spec says otherwise. */
-const DEFAULT_CORNER_FILL = 1;
-
 /** Below this solidity (area over convex hull area) a cell counts as deeply dented. */
 const DENTED = 0.85;
 
@@ -236,7 +233,7 @@ export function buildCells(spec: Spec, font: Font): Cell[] {
   const palette = spec.palette ?? DEFAULT_PALETTE;
   const padding = spec.fill?.padding ?? 10;
   const detail = spec.fill?.detail;
-  const cornerFill = spec.fill?.cornerFill ?? DEFAULT_CORNER_FILL;
+  const cornerFill = spec.fill?.cornerFill;
   const spread = spec.fill?.flow === "spread";
   // warp = 1 bends text to the whole cell; 0 sets it upright in a rectangle.
   const strength = Math.min(1, Math.max(0, spec.fill?.warp ?? 1));

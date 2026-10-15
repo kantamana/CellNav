@@ -17,7 +17,7 @@ import type { Spec } from "./cells";
  *   <cell-nav><a href="/about">About</a><a href="/blog">Blog</a></cell-nav>
  */
 export declare class CellNavElement extends HTMLElement {
-    static observedAttributes: readonly ["items", "spec", "width", "height", "stretch", "seed", "margin", "warp", "padding", "active", "fill", "aspect-blend", "noise", "effects", "noise-target", "noise-on", "noise-size", "noise-amount", "noise-scale", "noise-speed", "noise-seed", "noise-ease", "noise-mode", "noise-preserve", "shape-fit", "labels", "background", "text-detail", "corner-fill", "text-flow", "organic", "boundary", "boundary-stroke", "relaxation", "palette", "font-url"];
+    static observedAttributes: string[];
     private shadow;
     private pending;
     private generation;
